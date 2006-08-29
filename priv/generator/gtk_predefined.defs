@@ -1,0 +1,6 @@
+(define-object FileChooser
+  (in-module "Gtk")
+  (parent "Ginterface")
+  (c-name "GtkFileChooser")
+  (gtype-id "GTK_TYPE_FILE_CHOOSER")
+)
