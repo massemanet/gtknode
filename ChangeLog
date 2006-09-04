@@ -1,7 +1,18 @@
+2006-09-04  Mats Cronqvist  <locmacr@mwlx084>
+
+	* priv/examples/top/top.erl: 
+	ported to new GValue/GType implementation
+	
+2006-08-29  Mats Cronqvist  <locmacr@mwlx084>
+	* gtknode_marshal.c: 
+	put_string handles NULL pointer. coded as "".
+	Gvalue handling moved to GN_value_{get,set,unset}
+	list(string|integer|float) are decoded to GType*
+		
 2006-01-26  Romain Lenglet  <rlenglet@users.forge.objectweb.org>
 
-	* src/get_inc_path priv/generator/src/get_inc_path: reimplemented in
-	bash instead of tcsh, so that all scripts only depend on bash
+	* src/get_inc_path priv/generator/src/get_inc_path: reimplemented
+	in bash instead of tcsh, so that all scripts only depend on bash
 
 	* src/check_otp: redevelopped using Erlang's code:root_dir/0 and
 	code:lib_dir/1; now works all the time, including when the "erl"
