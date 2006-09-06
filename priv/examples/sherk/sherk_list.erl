@@ -22,7 +22,7 @@ go({call,PidStr}) ->
 
 str(X) -> flatten(io_lib:fwrite("~p",[X])).
 
-tag(P) -> panEts:lup(sherk_scan,{P,registered_name}).
+tag(P) -> panEts:lup(sherk_scan,P).
 
 percent(_,0) -> 0;
 percent(A,B) -> round(100*A/B).

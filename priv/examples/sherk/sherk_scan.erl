@@ -11,18 +11,17 @@
 -include_lib("kernel/include/file.hrl").
 
 -export([action/5]).
--export([write_msg/3]).
 
 -import(lists,[member/2,reverse/1,keysearch/3,map/2]).
 
--define(LOG(S,T), sherk:log([process_info(self()),S,T])).
+-define(LOG(T), sherk:log(process_info(self()),T)).
 
 -record(state, {seq=0, hits=0, cbs, pattern, out, min, max, eof = false}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 action(FileName, Patt, CBs, Min, Max) ->
     panEts:new(?MODULE),
-    {ok, FD} = file:open(FileName, [read, raw, binary]),
+    {ok, FD} = file:open(FileName, [read, raw, binary,compressed]),
     State = #state{pattern=Patt,cbs=cbs(CBs),min=Min,max=Max},
     St = file_action(FD, State),
     file:close(FD),
@@ -52,18 +51,19 @@ get_more_bytes(FD, Rest) ->
     end.
 
 %%% CBs - CB|list(CB)
-%%% CB - atom(M)|{atom(M),term(Init)}
+%%% CB - fun(F)|atom(M)|{fun(F),term(Init)}|{atom(M),term(Init)}
 cbs([]) -> [];
-cbs([CB|T]) ->
-    try [to_cb(CB)|cbs(T)]
-    catch _:_ -> [{?MODULE,write_msg,[]}]
-    end;
+cbs([CB|T]) -> [to_cb(CB)|cbs(T)];
 cbs(Term) -> cbs([Term]).
 
-to_cb({Mod,Term}) -> is_cb(Mod), {Mod,go,Term};
-to_cb(Mod) -> to_cb({Mod,initial}).
+to_cb('') -> {fun write_msg/3,[]};
+to_cb(Mod) when is_atom(Mod) -> to_cb({Mod,initial});
+to_cb(Fun) when is_function(Fun) -> to_cb({Fun,initial});
+to_cb({Mod,Init}) when is_atom(Mod) -> is_cb(Mod),{{Mod,go},Init};
+to_cb({Fun,Init}) when is_function(Fun) -> is_cb(Fun),{Fun,Init}.
 
-is_cb(M) -> true = member({go,3},M:module_info(exports)).
+is_cb(M) when is_atom(M) -> true = member({go,3},M:module_info(exports));
+is_cb(F) when is_function(F) -> {arity,3} = erlang:fun_info(F,arity).
 
 do(end_of_trace, State) -> 
     do_do(end_of_trace, State);
@@ -80,27 +80,26 @@ do(Mess, Stat) ->
 	Ms -> do_do(Ms, Stat)
     end.
 
-do_do(end_of_trace = Ms, #state{cbs=CBs} = State) ->
-    State#state{cbs=do_safe_cbs(CBs, Ms, State, [])};
+do_do(end_of_trace = Ms, #state{cbs=CBs, seq=Seq} = State) ->
+    State#state{cbs=do_safe_cbs(CBs, Ms, Seq, [])};
 do_do(Mess, #state{pattern=Patt, cbs=CBs, seq=Seq} = State) ->
     case grep(Patt, Mess) of
 	false -> State#state{seq = Seq+1};
 	true -> 
 	    State#state{seq = Seq+1, 
 			hits = State#state.hits+1, 
-			cbs=do_safe_cbs(CBs, Mess, State, [])}
+			cbs=do_safe_cbs(CBs, Mess, Seq, [])}
     end.
 
-do_safe_cbs([], _Mess, _, O) -> reverse(O);
-do_safe_cbs([{M, F, State}|CBs], Mess, #state{seq=Seq} = St, O) ->
-    do_safe_cbs(CBs, Mess, St, [{M,F,safe_cb(M,F,Mess,Seq,State)}|O]).
+do_safe_cbs([], _, _, O) -> reverse(O);
+do_safe_cbs([CB|CBs], Msg, Seq, O) ->
+    do_safe_cbs(CBs, Msg, Seq, [safe_cb(CB,Msg,Seq)|O]).
 
-safe_cb(M, F, Ms, Seq, Internal) ->
-    M:F(Ms, Seq, Internal).
+safe_cb({{M,F},State},Msg,Seq) -> {{M,F},M:F(Msg,Seq,State)};
+safe_cb({Fun,State},Msg,Seq) -> {Fun,Fun(Msg,Seq,State)}.
 
 write_msg(Msg,Seq,_) ->
-    io:fwrite("~.9.0w~w~~n",[Seq,Msg]).
-
+    io:fwrite("~.9.0w ~w~n",[Seq,Msg]).
 
 grep('',_) -> true;
 grep(P,T) when list(P) ->
@@ -156,14 +155,16 @@ grp(P, T) -> grp(P--[T], []).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 mass(end_of_trace = T) ->  T;
-mass({I, _} = R) when I==tabi; I==traci; I==sysi -> ets_ins(R), [];
-mass({porti, Port, Info}) -> handle_porti(Port, Info), [];
-mass({proci, Pid, Info}) -> handle_proci(Pid, Info), [];
+
+mass({port_info, Info}) -> handle_porti(Info), [];
+mass({proc_info, Info}) -> handle_proci(Info), [];
+mass({trace_info, Info}) -> handle_traci(Info), [];
+
 mass({trace, A, B, C}) -> mass(A, B, C, no_time);
 mass({trace, A, B, C, D}) -> mass(A, B, {C, D}, no_time);
 mass({trace_ts, A, B, C, TS}) -> mass(A ,B, C, TS);
 mass({trace_ts, A, B, C, D, TS}) -> mass(A, B, {C, D}, TS);
-mass(X) -> ?LOG(error, {unrec_msg, X}), [].
+mass(X) -> ?LOG({unrec_msg, X}), [].
 
 mass(Pid, T=send, X, TS) ->                       mass_send(Pid,T,X,TS);
 mass(Pid, T=send_to_non_existing_process, X,TS) ->mass_send(Pid,T,X,TS);
@@ -171,7 +172,7 @@ mass(Pid, T='receive', Message, TS) ->              {T,pi(Pid),Message,TS};
 mass(Pid, T=call, MFA, TS) ->                       {T,pi(Pid),MFA,TS};
 mass(Pid, T=return_to, MFA, TS) ->                  {T,pi(Pid),MFA,TS};
 mass(Pid, T=return_from, {MFA,R}, TS) ->            {T,pi(Pid),{MFA,R},TS};
-mass(Pid, T=spawn, {P2, MFA}, TS) ->hps(Pid,P2,MFA),{T,pi(Pid),{pi(P2),MFA},TS};
+mass(Pid, T=spawn, {P2, MFA}, TS) ->    hps(P2,MFA),{T,pi(Pid),{pi(P2),MFA},TS};
 mass(Pid, T=exit, Reason, TS) ->                    {T,pi(Pid),Reason,TS};
 mass(Pid, T=link, Pd, TS) ->                        {T,pi(Pid),pi(Pd),TS};
 mass(Pid, T=unlink, Pd, TS) when pid(Pd) ->         {T,pi(Pid),pi(Pd),TS};
@@ -196,55 +197,38 @@ mass_send(Pid, T, {Msg, {To,Node}}, TS) when atom(To), atom(Node) ->
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 pi(file_driver) -> {trace,file_driver};
-pi(Port) when port(Port) ->
-    case ets_lup({Port, name}) of
+pi(Port) when is_port(Port) ->
+    case ets_lup(Port) of
 	[] -> {Port, unknown};
 	Name -> {Port, Name}
     end;
-pi(Pid) when pid(Pid) ->
-    case ets_lup({Pid, registered_name}) of
-	[] -> 
-	    case ets_lup({Pid, initial_call}) of
-		[] -> {Pid, unknown};
-		IC -> {Pid, IC}
-	    end;
-	Reg -> {Pid, Reg}
-    end;
-pi(X) ->
-    ?LOG(error,{this_is_not_a_pid,X}),
-    {X,X}.
-
-find_pid(Reg) -> ets_lup({registered_name, Reg}).
-	
-handle_porti(Port, Info) ->
-    {value,{name,Name}} = keysearch(name,1,Info),
-    [Hd|_] = string:tokens(Name," "),
-    Tl = reverse(hd(string:tokens(reverse(Hd),"/"))),
-    ets_ins({{Port,name},list_to_atom(Tl)}).
-
-handle_proci(Pid, [Reg, MFA, Mem]) ->
-    ets_ins({{Pid, memory}, Mem}),
-    ets_ins({{Pid, initial_call}, MFA}),
-    case Reg of 
-	[] -> ets_ins({{Pid, registered_name}, MFA});
-	_ -> 
-	    ets_ins({{Pid, registered_name}, Reg}),
-	    ets_ins({{registered_name, Reg}, Pid}) %real registered name
+pi(Pid) when is_pid(Pid) ->
+    case ets_lup(Pid) of
+	[] -> {Pid, unknown};
+	Name -> {Pid, Name}
     end.
+
+find_pid(Name) -> ets_lup(Name).
+
+
+handle_porti(Is) -> lists:foreach(fun(I)->ets_ins(I) end, Is).
+
+handle_proci(Is) -> lists:foreach(fun proci/1, Is).
+
+handle_traci(_I) -> ok.
+    
+proci({Pid,Name}) ->
+    ets_ins({Pid,Name}),
+    case is_atom(Name) of
+	true -> ets_ins({Name,Pid});
+	false -> ok
+    end.
+
+hps(Pid,{M,F,As}) -> hpr(Pid,mangle_ic({M,F,As})).
 
 hpr(Pid, Reg) ->
-    ets_ins({{Pid, registered_name}, Reg}),
-    ets_ins({{registered_name, Reg}, Pid}).	%real registered name
-
-hps(ParentPid, Pid, {M, F, As}) ->
-    ets_ins({{Pid, parent}, pi(ParentPid)}),
-    ets_ins({{Pid, initial_call}, {M, F, length(As)}}),
-    ets_ins({{Pid, registered_name}, {M, F, length(As)}}),
-    case catch mangle_ic({M, F, As}) of
-	ok -> ok;
-	{'EXIT', _} -> ok;
-	Reg -> ets_ins({{Pid, registered_name}, Reg})
-    end.
+    ets_ins({Pid,Reg}),
+    ets_ins({Reg,Pid}).
 
 mangle_ic(MFA) ->
     case MFA of
@@ -259,8 +243,8 @@ mangle_ic(MFA) ->
 	    {application_master, {App}};
 	{erlang,apply,[Fun,[]]} when function(Fun) -> 
 	    funi(Fun);
-	_ -> 
-	    panOpt:mangle_ic(MFA)
+	{M,F,As} -> 
+	    {M,F,length(As)}
     end.
 
 atomize(FileName) ->

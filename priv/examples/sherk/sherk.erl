@@ -8,12 +8,13 @@
 -module(sherk).
 
 -export([go/0]).
--export([log/3]).
+-export([log/2]).
 
 -import(filename,[dirname/1,join/1]).
 -import(lists,[foreach/2]).
 -record(ld,{perf_list,call_list,perf_selection}).
 
+-define(LOG(T), sherk:log(process_info(self()),T)).
 
 go() -> spawn_link(fun init/0).
 
@@ -38,8 +39,8 @@ loop(LD) ->
 	{sherk,{signal,{call_window,_}}} -> hide(call_window),loop(LD);
 	
 	%% user curious
-	{sherk,{signal,{about,_}}} -> show(about),loop(LD);
-	{sherk,{signal,{about_ok,_}}} -> hide(about),loop(LD);
+	{sherk,{signal,{about_window,_}}} -> show(about_window),loop(LD);
+	{sherk,{signal,{about_ok,_}}} -> hide(about_window),loop(LD);
 
 	%% user changed directory
 	{sherk,{signal,{filechooserbutton,_}}} -> check_file(),loop(LD);
@@ -51,7 +52,7 @@ loop(LD) ->
 	{sherk,{signal,{perf_treeview,_}}} -> call(LD),loop(LD);
 
 	%% user doing some wierd stuff
-	X -> io:fwrite("erlang proc received ~p~n",[X]),loop(LD)
+	X -> ?LOG([{received,X}]),loop(LD)
     end.
 
 check_file() ->
@@ -154,5 +155,6 @@ f(C,As) ->
 	X -> exit({what,X}) 
     end.
 
-log(ProcInfo,_Sev,Term) ->
-    error_logger:info_report([Term|[{in,CF}||{current_function,CF}<-ProcInfo]]).
+log(ProcInfo,Term) when not is_list(Term) -> log(ProcInfo,[Term]);
+log(ProcInfo,Term) ->
+    error_logger:info_report([{in,CF}||{current_function,CF}<-ProcInfo]++Term).

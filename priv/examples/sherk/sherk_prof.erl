@@ -13,22 +13,18 @@
 
 -import(lists,[member/2,reverse/1,dropwhile/2,prefix/2,splitwith/2]).
 
--define(LOG(S,T), sherk:log(process_info(self()),S,T)).
+-define(LOG(T), sherk:log(process_info(self()),T)).
 
--record(state, {tab, currf, in = no, gc = no, fd = no, error, prev}).
+-record(state, {tab, currf, in = no, gc = no, fd = no, error}).
 
 go(Msg, Line, initial) ->
-    %%dbug(open),
     go(Msg, Line, #state{tab = panEts:new(?MODULE)});
 go(end_of_trace, _Line, State) ->
-    %%dbug(close),
     State;
 go(Msg, Line, State) ->
-    Nst = do(Msg, Line, State),
-    Nst#state{prev = element(4, Msg)}.
+    do(Msg, Line, State).
 
 do(Msg, Line, State) ->
-    %%dbug({Msg, Line, State}),
     case catch handle(Msg, State) of
 	NState = #state{error = undefined} -> NState;
 	NState = #state{error = Err} ->
@@ -38,29 +34,12 @@ do(Msg, Line, State) ->
 	    exit({crashed, {?MODULE, Line, R, Msg}})
     end.
 
-dbug(open) -> 
-    {ok,FD}=file:open(filename:join(os:getenv("HOME"),?MODULE)++".txt",[write]),
-    put(fd,FD);
-dbug(close) ->
-    file:close(get(fd));
-dbug({Msg, Line, State}) ->
-    case Msg of
-	{Tag,{Pid,ccv2_test},Info,_TS} ->
-	    Stack = ets_lup(State#state.tab, {stack, Pid}),
-	    io:fwrite(get(fd),"{dbg,~w}.~n",[{Line,Tag,Info,Stack}]);
-	_ -> ok
-    end.
-
-handle(Msg, State = #state{prev = Prev}) ->
+handle(Msg, State) ->
     case Msg of
 	{out, _, 0, Now} ->			%>late r7 filedriver
 	    leave_currf(Now, State#state{fd = yes});
-	{out, P, _, Prev} ->			%early r7b filedriver
-	    handle({out, P, 0, Prev}, State);
 	{in, _, 0, Now} ->			%>late r7 filedriver
 	    enter_currf(Now, State#state{fd = no});
-	{in, P, _, Now} when State#state.fd /= no -> %early r7b filedriver
-	    handle({in, P, 0, Now}, State);
 	{gc_start, {_Pid, _}, _Info, Now} ->	%gc
 	    leave_currf(Now, State#state{gc = yes});
 	{gc_end, {_Pid, _}, _Info, Now} ->	%gc
@@ -128,7 +107,7 @@ do_stack(return, State = #state{tab = Tab}, Pid, MFA) ->
 	Stack ->
 	    case member(MFA, Stack) of
 		false ->
-		    ?LOG(info,{dropped_headless_stack,{Pid,MFA,Stack}}),
+		    ?LOG({dropped_headless_stack,{Pid,MFA,Stack}}),
 		    drop_bad_stack(Tab, Pid, [MFA]),
 		    do_stack(in, State, Pid, MFA);
 		true ->
