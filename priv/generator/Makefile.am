@@ -1,14 +1,27 @@
 # Final output files.
 GEN_INCLUDES = g_generated.h gdk_generated.h gtk_generated.h
+GEN_DOCS = gtk_funcs.html gdk_funcs.html g_funcs.html
 
 # Automake-handled installation.
+DOCDIR = $(ERLANG_INSTALL_LIB_DIR_gtknode)/doc
+docdir = $(DOCDIR)
+doc_DATA = $(GEN_DOCS)
+
 generatordir = $(ERLANG_INSTALL_LIB_DIR_gtknode)/priv/src
 generator_DATA = $(GEN_INCLUDES)
+
 EXTRA_DIST = bio.erl generator.erl h2def.py \
 	g_black.txt gdk_black.txt gtk_black.txt \
 	g_white.txt gdk_white.txt gtk_white.txt \
-	g_predefined.defs gdk_predefined.defs gtk_predefined.defs 
+	g_predefined.defs gdk_predefined.defs gtk_predefined.defs \
+	$(GEN_DOCS)
 
+# we try to access developer.gnome.org in order to generate documentation
+# that has poper links to the GTK docs
+# set PROXY = "" to disable this
+# set PROXY = ":" if you don't have a proxy
+# set proxy = "proxy.host.name:port" if you have a proxy
+PROXY = "proxy.eth.ericsson.se:8080"
 
 # 1st part of the generator, in Python.
 FIRSTGEN = $(srcdir)/h2def.py
@@ -26,9 +39,9 @@ GTK_W_I = gtk_white_generated.defs
 INTERMEDIATES = $(G_I) $(GDK_I) $(GTK_I) $(G_W_I) $(GDK_W_I) $(GTK_W_I)
 
 CLEANFILES = $(GEN_INCLUDES) $(BEAMFILES) $(INTERMEDIATES) \
-	g_funcs.txt g_crap_funcs.txt g_crap_types.txt \
-	gdk_funcs.txt gdk_crap_funcs.txt gdk_crap_types.txt \
-	gtk_funcs.txt gtk_crap_funcs.txt gtk_crap_types.txt
+	g_funcs.html g_crap_funcs.txt g_crap_types.txt \
+	gdk_funcs.html gdk_crap_funcs.txt gdk_crap_types.txt \
+	gtk_funcs.html gtk_crap_funcs.txt gtk_crap_types.txt
 
 # Input files.
 STRUCTS = $(srcdir)/../../c_src/gtknode_structs.c
@@ -47,18 +60,19 @@ BLACKLISTS = $(srcdir)/g_black.txt $(srcdir)/gdk_black.txt \
 
 all: $(GEN_INCLUDES)
 
-$(GEN_INCLUDES): $(BEAMFILES) $(INTERMEDIATES) $(STRUCTS) \
+$(GEN_DOCS) $(GEN_INCLUDES): $(BEAMFILES) $(INTERMEDIATES) $(STRUCTS) \
 		$(srcdir)/g_black.txt $(srcdir)/gdk_black.txt \
 		$(srcdir)/gtk_black.txt
-	$(ERL) -noinput -run generator go "$(GTKVSN)" "$(STRUCTS)" \
+	$(ERL) -noinput -run generator go $(PROXY) \
+		"$(GTKVSN)" "$(STRUCTS)" \
 		g $(G_I) $(G_W_I) $(srcdir)/g_black.txt \
-		g_generated.h g_funcs.txt \
+		g_generated.h g_funcs.html \
 		g_crap_funcs.txt g_crap_types.txt \
 		gdk $(GDK_I) $(GDK_W_I) $(srcdir)/gdk_black.txt \
-		gdk_generated.h gdk_funcs.txt \
+		gdk_generated.h gdk_funcs.html \
 		gdk_crap_funcs.txt gdk_crap_types.txt \
 		gtk $(GTK_I) $(GTK_W_I) $(srcdir)/gtk_black.txt \
-		gtk_generated.h gtk_funcs.txt \
+		gtk_generated.h gtk_funcs.html \
 		gtk_crap_funcs.txt gtk_crap_types.txt \
 		-s erlang halt
 

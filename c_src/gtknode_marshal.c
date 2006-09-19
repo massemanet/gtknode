@@ -576,7 +576,7 @@ gboolean gn_get_enum_name(const gchar *type_name, gint i, gchar *enum_name) {
 /***************************************************************************/
 /*  {{Pid,signal},{Widget,EvType}}  */
 /***************************************************************************/
-void gn_send_signal(const char *widgetname, char *evtyp) {
+void gn_send_signal(const char *widgetname, const char *evtyp) {
   ei_x_buff xbuf;
 
   ei_x_new_with_version(&xbuf);

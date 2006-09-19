@@ -156,19 +156,35 @@ gboolean GN_value_unset(int ARI, ei_x_buff *XBUF, char *B, int *I){
   return TRUE;
 }
 
-gboolean GN_tree_selection_get_selected(int ARI, ei_x_buff *XBUF, char *B, int *I){
-  GtkTreeSelection* object;
-  GtkTreeIter* iter;
-
-  gboolean R; /* return value */
-
-  if ( ! gn_check_arity(XBUF, 2, ARI) ) return FALSE;
-  if ( ! gn_get_arg_object(XBUF, B, I, GTK_TYPE_TREE_SELECTION, (GObject**)&object) ) return FALSE;
-  if ( ! gn_get_arg_struct(XBUF, B, I, "GtkTreeIter", (void**)&iter) ) return FALSE;
-  R = gtk_tree_selection_get_selected(object, NULL, iter);
-  gn_put_boolean(XBUF,(int)R);
+gboolean GN_tree_view_get_selected(int ARI, ei_x_buff *XBUF, char *B, int *I){
+  GtkTreeView *tv;
+  GtkTreeSelection *selection;
+  GtkTreeModel *model;
+  gchar* path;
+  
+  if ( ! gn_check_arity(XBUF, 1, ARI) ) 
+    return FALSE;
+  if ( ! gn_get_arg_object(XBUF, B, I, GTK_TYPE_TREE_VIEW, (GObject**)&tv) ) 
+    return FALSE;
+  
+  model = gtk_tree_view_get_model(tv);
+  selection = gtk_tree_view_get_selection(tv);
+  
+  GList* list = gtk_tree_selection_get_selected_rows(selection, &model);
+  
+  gn_wrap_reply("ok", XBUF);
+  
+  while ( list ) {
+    path = gtk_tree_path_to_string( (GtkTreePath*) list->data);
+    g_assert( ! ei_x_encode_list_header(XBUF, 1) );
+    g_assert( ! ei_x_encode_string(XBUF, path) );
+    g_free(path);
+    list = list->next;
+  }
+  g_list_free(list);
+  g_assert( ! ei_x_encode_empty_list(XBUF));
   return TRUE;
-}
+}  
 
 gboolean GN_pango_layout_set_text(int ARI, ei_x_buff *XBUF, char *B, int *I){
   char* text;

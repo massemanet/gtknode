@@ -73,6 +73,6 @@ gboolean gn_get_enum_val(ei_x_buff *xbuf,
 GType gn_GType_from_name(const gchar* name);
 
 void gn_send(ei_x_buff *xbuf);
-void gn_send_signal(const char *widgetname, char *evtyp);
+void gn_send_signal(const char *widgetname, const char *evtyp);
 
 GtkWidget* gn_check_widget_name(char* widget_name);

@@ -6,7 +6,9 @@
 %%% Created : 22 Nov 2004 by Mats Cronqvist <qthmacr@mwux005>
 %%%-------------------------------------------------------------------
 -module(gtknode).
--export([start/1,stop/1,debug/0]).
+-export([start/1,stop/1]).
+-export([debug/0,f/2,f/3]).
+
 %%-export([recv/0]).
 %%-export([glade/1,widget_get_attr/1,new_gvalue/2]).
 
@@ -60,6 +62,18 @@ loopDBGH() ->
 	    gtkNodeDBG ! {self(),Cmd},loopDBGH();
 	quit ->
 	    gtkNodeDBG ! quit
+    end.
+
+f(GUI,C,As) -> f(GUI,[{C,As}]).
+f(GUI,CAs) ->
+    GUI ! {self(),CAs},
+    receive 
+	{GUI,{reply,Reps}} -> 
+  	    case [E || {error,E} <- Reps] of 
+		[] -> {ok,Rep} = hd(lists:reverse(Reps)), Rep; 
+		_ -> Reps 
+	    end; 
+	X -> exit({what,X}) 
     end.
 
 %%%-------------------------------------------------------------------

@@ -17,16 +17,51 @@
 -record(func, {black=no,cname,pref,ret,const=no,paras=[]}).
 -record(type, {what,cname,gtype,etype,cast}).
 
-go([Vsn, StructsFile | Files]) ->
+go([Proxy, Vsn, StructsFile | Files]) ->
     ets_new(types),
     ets_new(funcs),
     ets_new(bogus, [{keypos, 1}]),
+    get_doc_links(Proxy),
     do_types_loop(Files), % populate the type table
     lists(),
     structs(StructsFile),
     basic_types(),
     R = generate_wrappers_loop(Vsn, Files),
     io:fwrite("~w ~p~n~n", [?MODULE, R]).
+
+doc_header(FD)->
+    io:fwrite(FD,"<html><head>"
+	      "<title>Functions wrapped by gtknode</title><body>"
+	      "<h2>Functions wrapped by gtknode</h2>",[]).
+doc_footer(FD)->
+    io:fwrite(FD,"</body></html>",[]).
+
+get_doc_links("")-> ok;
+get_doc_links(Proxy)-> 
+    case string:tokens(Proxy,":") of
+	"" -> ok;
+	[H,P] -> http:set_options([{proxy,{{H,list_to_integer(P)},[]}}])
+    end,
+    foreach(fun doc_links/1, ["gtk","glib","gdk","gobject","gdk-pixbuf"]).
+
+doc_links(X)-> 
+    URL = "http://developer.gnome.org/doc/API/2.0/"++X++"/ix01.html",
+    RE = "<a href=\"[A-Za-z-]+.html#id[0-9]+\">[a-z_]+ \\(\\)</a>",
+    try 
+	{ok,{_,_,S}} = http:request(get,{URL,[]},[{timeout,5000}],[]),
+	{match,Ms} = regexp:matches(S,RE),
+	io:fwrite("got ~p links from ~s~n",[length(Ms),URL]),
+	foreach(fun({St,Le})-> do_doc_link(URL,string:substr(S,St,Le)) end, Ms)
+    catch 
+	error:R -> io:fwrite("get_doc_links for ~s failed:~p~n",[X,R])
+    end.
+
+do_doc_link(URL,S) ->
+    case string:tokens(S,"=>< \"") of
+	["a","href",Href,"g"++Func,"()","/a"] ->
+	    put("G"++Func,"<a href=\""++dirname(URL)++"/"++Href++"\">");
+	_ -> ok
+    end.
 
 do_types_loop([]) ->
     ok;
@@ -37,18 +72,18 @@ do_types_loop([_Prefix, FuncDefs, _FuncDefsWhiteList, _FuncDefsBlackList,
     do_types_loop(Tail).
 
 generate_wrappers_loop(Vsn, Files) ->
-    generate_wrappers_loop(Vsn, Files, []).
-generate_wrappers_loop(_Vsn, [], Results) ->
-    Results;
-generate_wrappers_loop(Vsn, [Prefix, FuncDefs, 
-			     FuncDefsWhiteList,FuncDefsBlackList, 
-			     FuncWrappersCode, WrappedFuncsList, 
-			     ErrorFuncsList,ErrorTypesList | Tail], Results) ->
+    gw_loop(Vsn, Files, []).
+
+gw_loop(_Vsn, [], Results) -> Results;
+gw_loop(Vsn, [Prefix, FuncDefs, 
+	      FuncDefsWhiteList,FuncDefsBlackList, 
+	      FuncWrappersCode, WrappedFuncsList, 
+	      ErrorFuncsList,ErrorTypesList | Tail], Results) ->
     Res = generate_wrappers(Vsn, Prefix, FuncDefs, 
 			    FuncDefsWhiteList, FuncDefsBlackList, 
 			    FuncWrappersCode, WrappedFuncsList, ErrorFuncsList,
 			    ErrorTypesList),
-    generate_wrappers_loop(Vsn, Tail, [Res | Results]).
+    gw_loop(Vsn, Tail, [Res | Results]).
 
 generate_wrappers(Vsn, Prefix, _FuncDefs, 
 		  FuncDefsWhiteList, FuncDefsBlackList,
@@ -60,10 +95,12 @@ generate_wrappers(Vsn, Prefix, _FuncDefs,
     {ok,FDok} = file:open(WrappedFuncsList, [write]),
     {ok,FDcrap} = file:open(ErrorFuncsList, [write]),
     {ok,FDtypes} = file:open(ErrorTypesList, [write]),
+    doc_header(FDok),
     vsn(Vsn, [FDc, FDok, FDcrap, FDtypes]),
     FRWAs = ets:match(funcs, {func, no, '$1', Prefix, '$2', '$3', '$4'}),
     foreach(fun(FRWA) -> gen_one(FDc, FDcrap, FDok, Prefix, FRWA) end, FRWAs),
     log_types(FDtypes),
+    doc_footer(FDok),
     {Prefix, length(FRWAs), ets:lookup(bogus, good), ets:lookup(bogus, bad)}.
 
 vsn(_, []) -> ok;
@@ -244,7 +281,10 @@ cunstick(FD) -> io:fwrite(FD, "~s", [lists:flatten(get(cfunc))]).
 
 eunstick(FD) ->
     {{Cname,_Ename},As} = get(efunc),
-    io:fwrite(FD, "~s(",[Cname]),
+    case get(Cname) of
+	undefined -> io:fwrite(FD, "<br>~s(",[Cname]);
+	Link -> io:fwrite(FD, "<br>~s~s</a>(",[Link,Cname])
+    end,
     eunstick_args(FD,As),
     io:fwrite(FD, ")~n",[]).
 
