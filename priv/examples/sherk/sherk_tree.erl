@@ -10,7 +10,7 @@
 -export([tree/1]).
 
 tree(File) ->
-    panScan:file(File,'',sherk_prof),
+    sherk_scan:file(File,'',sherk_prof,0,''),
     make_tree().
 
 make_tree() ->

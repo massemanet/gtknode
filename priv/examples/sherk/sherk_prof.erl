@@ -18,7 +18,7 @@
 -record(state, {tab, currf, in = no, gc = no, fd = no, error}).
 
 go(Msg, Line, initial) ->
-    go(Msg, Line, #state{tab = panEts:new(?MODULE)});
+    go(Msg, Line, #state{tab = sherk_ets:new(?MODULE)});
 go(end_of_trace, _Line, State) ->
     State;
 go(Msg, Line, State) ->
@@ -175,7 +175,7 @@ remove_prefix(Pref,List) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ets_upd(Tab,Key) -> ets_upd(Tab,Key, 1).
 ets_upd(Tab,Key,Inc) ->
-    panEts:upd(Tab,Key,Inc).
+    sherk_ets:upd(Tab,Key,Inc).
 ets_ins(Tab, Rec) ->
     catch ets:insert(Tab, Rec).
 ets_lup(Tab, Key) ->

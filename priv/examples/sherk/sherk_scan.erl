@@ -20,7 +20,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 action(FileName, Patt, CBs, Min, Max) ->
-    panEts:new(?MODULE),
+    sherk_ets:new(?MODULE),
     {ok, FD} = file:open(FileName, [read, raw, binary,compressed]),
     State = #state{pattern=Patt,cbs=cbs(CBs),min=Min,max=Max},
     St = file_action(FD, State),

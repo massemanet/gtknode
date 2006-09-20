@@ -8,29 +8,33 @@
 -module(sherk_tab).
 
 -export([assert/1,check_file/1]).
+
 -import(filename,[dirname/1,join/1,basename/2]).
+
+-include_lib("kernel/include/file.hrl").
 
 -define(LOG(T), sherk:log(process_info(self()),T)).
 
 assert(File) ->
     try 
 	%% we have a table
-	File = panEts:lup(sherk_prof, file)
+	File = sherk_ets:lup(sherk_prof, file)
     catch 
 	_:_ -> 
 	    %% we need a table
-	    TabFile = join([dirname(File),basename(File,".trz")++".ets"]),
+	    TabFile = dirname(File)++"/."++basename(File,".trz")++".etz",
+	    {ok,#file_info{mtime=MT}} = file:read_file_info(File),
 	    case file:read_file_info(TabFile) of
-		{ok,_} -> 
+		{ok,#file_info{mtime=TabMT}} when MT < TabMT -> 
 		    %% we have a tab file squirreled away
-		    panEts:f2t(TabFile);
-		{error,_} -> 
+		    sherk_ets:f2t(TabFile);
+		_ -> 
 		    %% make tab and save it
 		    sherk_scan:action(File,'',sherk_prof,0,''),
 		    ets:foldl(fun store_pid/2, [], sherk_prof),
 		    ets:insert(sherk_prof, {file, File}),
 		    try 
-			panEts:t2f(sherk_prof,TabFile),
+			sherk_ets:t2f([sherk_prof,sherk_scan],TabFile),
 			?LOG({created,TabFile})
 		    catch 
 			_:_ -> ?LOG({creation_failed,TabFile})

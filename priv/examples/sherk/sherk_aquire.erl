@@ -9,6 +9,10 @@
 
 -export([go/7]).
 -export([stop/0,kill/0]).
+-export([known_nodes/0]).
+-export([check_dir/1]).
+
+-include_lib("kernel/include/file.hrl").
 
 -import(dict,[from_list/1,fetch/2,store/3]).
 -import(lists,[foldl/3,map/2,member/2]).
@@ -25,9 +29,9 @@
 go(Time,Flags,RTPs,Procs,Targs,Cookie,Dest) -> 
     check_and_spawn(Time,Flags,RTPs,Procs,Targs,Cookie,Dest).
 
-stop() -> catch (?MODULE ! stop).
+stop() -> catch (sherk_host ! stop).
 
-kill() -> catch exit(erlang:whereis(?MODULE),kill).
+kill() -> catch exit(erlang:whereis(sherk_host),kill).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% most argument checking is done here. some pid-related checking has 
@@ -42,8 +46,8 @@ check_and_spawn(Time,Flags,RTPs,Procs,Targs,Cookie,Dest) ->
 		    {targs,chk_conns(Targs,Cookie)},
 		    {daddy,self()}]),
     
-    spawn(fun init/0) ! {init,LD},
-    ok.
+    (Pid = spawn(fun init/0)) ! {init,LD},
+    Pid.
 
 chk_conns(Targs,Cookie) -> map(fun(T)->chk_conn(T,Cookie) end,Targs).
 
@@ -109,7 +113,8 @@ init() ->
 	    Pids = [spawn_link(T, fun sherk_target:init/0) || T <- Targs],
 	    [ P ! {init,store(daddy,self(),LD)} || P <- Pids],
 	    Timer = erlang:start_timer(fetch(time,LD),self(),{die}),
-	    loop(store(pids,Pids,store(timer,Timer,LD)))
+	    loop(store(pids,Pids,store(timer,Timer,LD))),
+            fetch(daddy,LD) ! done
     end.
 
 loop(LD) ->
@@ -201,3 +206,14 @@ netload(Node, Mod) ->
 ftime([]) -> interpreted;
 ftime([{time,T}|_]) -> T;
 ftime([_|T]) -> ftime(T).
+
+check_dir(Dir) ->
+    {ok,#file_info{type=directory, access=read_write}} = 
+        file:read_file_info(Dir).
+
+known_nodes() ->
+    Cmd = filename:join([code:root_dir(),bin,epmd])++" -names",
+    Nods = string:tokens(os:cmd(Cmd),"\n"),
+    CPs = [N || ["name",N|_] <- [string:tokens(Str," ") || Str <- Nods]],
+    {ok,Node} = inet:gethostname(),
+    [list_to_atom(CP++"@"++Node) || CP <-CPs]--[node()].
