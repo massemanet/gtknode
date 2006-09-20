@@ -14,10 +14,17 @@ void erl(GtkWidget *widget){
   const char *widgetname;
   
   GSignalInvocationHint *ihint = g_signal_get_invocation_hint(widget);
-  const gchar *signal_name = g_signal_name(ihint->signal_id);
+  const gchar *signalname = g_signal_name(ihint->signal_id);
   if ( ! (widgetname = glade_get_widget_name(widget)) )
     widgetname = "UNKNOWN";
-  gn_send_signal(widgetname, signal_name);
+  gn_send_signal(widgetname, signalname);
+}
+
+void gn_erl(GtkWidget *widget){
+  erl(widget);
+}
+void gn_sighandler(GtkWidget *widget){
+  erl(widget);
 }
 
 GtkWidget* gn_check_widget_name(char* widget_name) {

@@ -12,6 +12,7 @@ gboolean gn_handle_read(GIOChannel *source,GIOCondition cond,gpointer data);
 
 /* called by all signals */
 void gn_sighandler(GtkWidget *widget);/* , gpointer user_data); */
+void gn_erl(GtkWidget *widget);/* , gpointer user_data); */
 
 /* inits libglade */
 gboolean gn_glade_init(char *filename);

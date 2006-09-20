@@ -31,13 +31,13 @@ init() ->
 
 loop(LD) ->
     receive
-	{?MODULE,{signal,{drawingarea,'GDK_EXPOSE'}}} -> loop(redraw(LD));
-	{?MODULE,{signal,{button_red,_}}} ->   loop(point(LD,red));
-	{?MODULE,{signal,{button_green,_}}} -> loop(point(LD,green));
-	{?MODULE,{signal,{button_blue,_}}} ->  loop(point(LD,blue));
-	{?MODULE,{signal,{button_quit,_}}} ->quit();
-	{?MODULE,{signal,{window,'GDK_DELETE'}}} -> quit();
-	quit -> quit();
+	{?MODULE,{signal,{drawingarea,'expose-event'}}}->loop(redraw(LD));
+	{?MODULE,{signal,{button_red,'clicked'}}}      ->loop(point(LD,red));
+	{?MODULE,{signal,{button_green,'clicked'}}}    ->loop(point(LD,green));
+	{?MODULE,{signal,{button_blue,'clicked'}}}     ->loop(point(LD,blue));
+	{?MODULE,{signal,{button_quit,'clicked'}}}     ->quit();
+	{?MODULE,{signal,{window,'delete-event'}}}     ->quit();
+	quit                                           ->quit();
 	X -> io:fwrite("got ~p~n",[X]),loop(LD)
     end.
 

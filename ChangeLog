@@ -1,9 +1,27 @@
+2006-09-20  Mats Cronqvist  <locmacr@mwlx084>
+
+	* c_src/gtknode_glade.c:  gn_erl is an alias for gn_sighandler
+	* priv/examples:  fixed up the examples
+	* configure.ac: took some suggestions from lenglet
+
+2006-09-19  Mats Cronqvist  <locmacr@mwlx084>
+
+	* c_src/gtknode_glade.c:
+	signals from the c-node now looks like {GUI,{signal,{Widget,Signal}}}
+	* c_src/gtknode_internal.c:
+	implemented GN_tree_view_get_selected (returns a list of path strings)
+	* priv/generator/generator.erl:
+	the generator now generates pretty useful documentation
+	* src/gtknode.erl:
+	implemented gtknode:f/2,3 for interactive use from the shell
+
 2006-09-04  Mats Cronqvist  <locmacr@mwlx084>
 
 	* priv/examples/top/top.erl: 
 	ported to new GValue/GType implementation
 	
 2006-08-29  Mats Cronqvist  <locmacr@mwlx084>
+
 	* gtknode_marshal.c: 
 	put_string handles NULL pointer. coded as "".
 	Gvalue handling moved to GN_value_{get,set,unset}

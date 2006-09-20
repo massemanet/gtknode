@@ -1,7 +1,7 @@
-AC_INIT(GTK+ 2 wrapper library for Erlang, 0.15, rlenglet@users.forge.objectweb.org, gtknode)
-dnl Require autoconf version >=2.57.
-AC_PREREQ(2.57)
-AC_COPYRIGHT(Copyright (C) 2005 Romain Lenglet)
+AC_INIT(GTK+ 2 wrapper library for Erlang, 0.15, mats.cronqvist@ericsson.com, gtknode)
+dnl Require autoconf version >=2.59c. first one with erlang macros
+AC_PREREQ(2.59c)
+AC_COPYRIGHT(Copyright (C) 2005 Mats Cronqvist)
 dnl AC_REVISION($Id$)
 
 dnl Require automake version >=1.9.5.
@@ -15,7 +15,7 @@ dnl Erlang-related configuration.
 AC_ERLANG_SUBST_ROOT_DIR
 AC_ERLANG_SUBST_LIB_DIR
 AC_ERLANG_CHECK_LIB(erl_interface)
-AC_ERLANG_SUBST_INSTALL_LIB_SUBDIR(gtknode, 0.15)
+AC_ERLANG_SUBST_INSTALL_LIB_SUBDIR(AC_PACKAGE_TARNAME, AC_PACKAGE_VERSION)
 erlcflags="+debug_info"
 AC_SUBST([ERLCFLAGS], [$erlcflags])
 
