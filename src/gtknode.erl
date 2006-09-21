@@ -7,7 +7,8 @@
 %%%-------------------------------------------------------------------
 -module(gtknode).
 -export([start/1,stop/1]).
--export([debug/0,f/2,f/3]).
+-export([debug/0,debug/1,debug/2]).
+-export([f/2,f/3]).
 
 %%-export([recv/0]).
 %%-export([glade/1,widget_get_attr/1,new_gvalue/2]).
@@ -36,32 +37,44 @@ start(Name) ->
 stop(Pid) ->
     Pid ! quit.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% for debugging, run gtknode:debug and start gtknode from a shell thusly;
+%%% gtknode <erlnodename> <host> gtknode_dbg <cookie> nod <erl_dist_version>
+%%% E.g. bin/gtknode foo mwlx084 gtknode_dbg cki nod 11
+%%% send messages to the gtknode with gtknode:debug/2, thusly;
+%%% gtknode:dbg('GN_glade_init',["gladefile.glade"]).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+debug(Cmd,Args) -> debug([{Cmd,Args}]).
+debug(CmdArgs) ->
+    catch debug(),
+    gtknode_dbgH ! {cmd, Cmd},
+    ok.
 debug() ->
-    case whereis(gtkNodeDBG) of
+    case whereis(gtknode_dbg) of
 	undefined -> spawn(fun initDBG/0);
-	_ -> erlang:fault({already_started,gtkNodeDBG})
+	_ -> erlang:fault({already_started,gtknode_dbg})
     end.
 
 initDBG() ->
     process_flag(trap_exit,true), 
-    register(gtkNodeDBG, self()),
+    register(gtknode_dbg, self()),
     Handler = spawn_link(fun initDBGH/0),
-    waiting_handshake(#st{handler_pid=Handler, name=gtkNodeDBG}).    
+    waiting_handshake(#st{handler_pid=Handler, name=gtknode_dbg}).    
 
 initDBGH() ->
-    register(gtkNodeDBGH, self()),
+    register(gtknode_dbgH, self()),
     loopDBGH().
 
 loopDBGH() ->
     receive 
-	{gtkNodeDBG, {signal, Sig}} ->
+	{gtknode_dbg, {signal, Sig}} ->
 	    io:fwrite("signal - ~p~n", [Sig]),loopDBGH();
-	{gtkNodeDBG, {reply, Rep}} ->
-	    io:fwrite("signal - ~p~n", [Rep]),loopDBGH();
+	{gtknode_dbg, {reply, Rep}} ->
+	    io:fwrite("reply - ~p~n", [Rep]),loopDBGH();
+	{cmd,quit} ->
+	    gtknode_dbg ! quit;
 	{cmd, Cmd} ->
-	    gtkNodeDBG ! {self(),Cmd},loopDBGH();
-	quit ->
-	    gtkNodeDBG ! quit
+	    gtknode_dbg ! {self(),Cmd},loopDBGH()
     end.
 
 f(GUI,C,As) -> f(GUI,[{C,As}]).
@@ -142,7 +155,7 @@ waiting_handshake(St = #st{gtk_port=Port}) ->
 	quit -> 
 	    die(St)
     after 
-	?BORED -> waiting_handshake(bored(waiting_handhake,St))
+	?BORED -> waiting_handshake(bored(waiting_handshake,St))
     end.
 
 idle(St = #st{gtk_pid=GtkPid, gtk_port=Port, handler_pid=HandPid}) ->

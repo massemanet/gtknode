@@ -1,9 +1,14 @@
+2006-09-21  Mats Cronqvist  <locmacr@mwlx084>
+
+	* src/gtknode.erl:   fixed up the gtknode:debug/0,1,2 functions
+
 2006-09-20  Mats Cronqvist  <locmacr@mwlx084>
 
 	* c_src/gtknode_glade.c:  gn_erl is an alias for gn_sighandler
 	* priv/examples:  fixed up the examples
 	* configure.ac: took some suggestions from lenglet
-
+	* sherk: the sherk example mostly works ;>
+	
 2006-09-19  Mats Cronqvist  <locmacr@mwlx084>
 
 	* c_src/gtknode_glade.c:
