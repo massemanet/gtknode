@@ -12,9 +12,10 @@
 -export([loop/1]).
 
 -import(filename,[dirname/1,join/1]).
--import(lists,[foreach/2,member/2]).
+-import(lists,[foreach/2,member/2,flatten/1]).
+-import(dict,[from_list/1,fetch/2]).
 
--record(ld,{targets,monitor}).
+-record(ld,{targets,monitor,combo_indx}).
 
 -define(LOG(T), sherk:log(process_info(self()),T)).
 -define(LOOP(X), ?MODULE:loop(X)).
@@ -34,6 +35,7 @@ init() ->
     check_file(),
     %% set default trc destination
     f('Gtk_file_chooser_set_current_folder',[aq_filechoose,"/tmp"]),
+    f('Gtk_file_chooser_set_current_folder',[main_filechoose,"/tmp"]),
 
     %% init nodes treeview
     NodeList = init_list_store([string]),
@@ -44,11 +46,16 @@ init() ->
     %% init calls treeview
     CallList = init_list_store([string,integer,integer]),
     init_tree_view(call_treeview,CallList,[{0,"MFA"},{1,"calls"},{2,"%"}]),
+    %% init calls combobox
+    init_combobox(),
 
     %% init procs treeview
     PerfList = init_list_store([string,string,integer,integer]),
     init_tree_view(perf_treeview,PerfList,[{1,"tag"},{2,"us"},{3,"%"}]),
 
+    %% hide the radio buttons
+    hide(call_heavy_radio),
+    hide(call_tree_radio),
 
     loop(#ld{targets=Targets}).
 
@@ -81,10 +88,11 @@ loop(LD) ->
 	{sherk,{signal,{aq_stop_button,_}}}  -> ?LOOP(aq_stop(LD));
 
 	%% let's go
-	{sherk,{signal,{go_button,_}}}       -> perf(LD),?LOOP(LD);
+	{sherk,{signal,{go_button,_}}}       -> ?LOOP(perf(LD));
 
 	%% inspect process
-	{sherk,{signal,{perf_treeview,_}}}   -> call(LD),?LOOP(LD);
+	{sherk,{signal,{perf_treeview,_}}}   -> ?LOOP(call(perf,LD));
+        {sherk,{signal,{call_combobox,_}}}   -> ?LOOP(call(combo,LD));
 
         %% a target node went away
         {nodedown, Node}                     -> ?LOOP(update_targets(LD,Node));
@@ -195,17 +203,37 @@ proc_flags() ->
 call_flags() ->
     ['call','return_to','arity'|proc_flags()].
 
-perf(_) ->
+perf(LD) ->
     f('Gtk_widget_set_sensitive',[go_button,false]),
     File = f('Gtk_file_chooser_get_filename',[main_filechoose]),
     sherk_tab:assert(File),
     List = sherk_list:go(perf),
     update_treeview(perf_treeview,List),
-    f('Gtk_widget_set_sensitive',[go_button,true]).
+    Indexs = update_combo(call_combobox,List),
+    f('Gtk_widget_set_sensitive',[go_button,true]),
+    LD#ld{combo_indx=Indexs}.
 
-call(_) ->
-    show(call_window),
+update_combo(Combobox,List) ->
+    Model = f('Gtk_combo_box_get_model',[Combobox]),
+    list_clear(Model),
+    list_insert(Model,[[H] || [_,H|_] <- List]),
+    from_list(indexs([[H] || [H|_] <- List],0)).
+
+indexs([],_) -> [];
+indexs([[P]|R],N) -> flatten([[{N,P},{P,N}]|indexs(R,N+1)]).
+
+call(perf,LD) -> 
     [Pid] = get_selected_data(perf_treeview,0),
+    f('Gtk_combo_box_set_active',[call_combobox,fetch(Pid,LD#ld.combo_indx)]),
+    call(Pid),
+    LD;
+call(combo,LD) ->
+    N = f('Gtk_combo_box_get_active',[call_combobox]),
+    Pid = fetch(N,LD#ld.combo_indx),
+    call(Pid),
+    LD.
+call(Pid) ->
+    show(call_window),
     List = sherk_list:go({call,Pid}),
     update_treeview(call_treeview,List).
 
@@ -262,6 +290,13 @@ list_insert_row(Store,[I|Is],N) ->
     f('GN_value_set',[val,I]),
     f('Gtk_list_store_set_value',[Store,iter,N,val]),
     list_insert_row(Store,Is,N+1).
+
+init_combobox() ->
+    CallComboList = init_list_store([string]),
+    f('Gtk_combo_box_set_model',[call_combobox,CallComboList]),
+    Rend = f('Gtk_cell_renderer_text_new',[]),
+    f('Gtk_cell_layout_pack_start',[call_combobox,Rend,false]),
+    f('Gtk_cell_layout_add_attribute',[call_combobox,Rend,"text",0]).
 
 init_tree_view(TreeView,Model,Cols) ->
     f('Gtk_tree_view_set_model',[TreeView,Model]),

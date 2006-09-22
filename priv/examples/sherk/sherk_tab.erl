@@ -16,30 +16,26 @@
 -define(LOG(T), sherk:log(process_info(self()),T)).
 
 assert(File) ->
-    try 
-	%% we have a table
-	File = sherk_ets:lup(sherk_prof, file)
-    catch 
-	_:_ -> 
-	    %% we need a table
-	    TabFile = dirname(File)++"/."++basename(File,".trz")++".etz",
-	    {ok,#file_info{mtime=MT}} = file:read_file_info(File),
-	    case file:read_file_info(TabFile) of
-		{ok,#file_info{mtime=TabMT}} when MT < TabMT -> 
-		    %% we have a tab file squirreled away
-		    sherk_ets:f2t(TabFile);
-		_ -> 
-		    %% make tab and save it
-		    sherk_scan:action(File,'',sherk_prof,0,''),
-		    ets:foldl(fun store_pid/2, [], sherk_prof),
-		    ets:insert(sherk_prof, {file, File}),
-		    try 
-			sherk_ets:t2f([sherk_prof,sherk_scan],TabFile),
-			?LOG({created,TabFile})
-		    catch 
-			_:_ -> ?LOG({creation_failed,TabFile})
-		    end
-	    end
+    TabFile = dirname(File)++"/."++basename(File,".trz")++".etz",
+    {ok,#file_info{mtime=MT}} = file:read_file_info(File),
+    case file:read_file_info(TabFile) of
+        {ok,#file_info{mtime=TabMT}} when MT < TabMT -> 
+            %% the tab file exists and is up-to-date
+            case sherk_ets:lup(sherk_prof, file) of
+                File -> ok;                     % table is in memory
+                _ -> sherk_ets:f2t(TabFile)     % need to load table
+            end;
+        _ -> 
+            %% make tab and save it
+            sherk_scan:action(File,'',sherk_prof,0,''),
+            ets:foldl(fun store_pid/2, [], sherk_prof),
+            ets:insert(sherk_prof, {file, File}),
+            try 
+                sherk_ets:t2f([sherk_prof,sherk_scan],TabFile),
+                ?LOG({created,TabFile})
+            catch 
+                _:_ -> ?LOG({creation_failed,TabFile})
+            end
     end.
 
 store_pid({{{pid,time},P},_},_) -> ets:insert(sherk_prof,{pid_to_list(P),P});
