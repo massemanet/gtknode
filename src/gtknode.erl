@@ -47,7 +47,7 @@ stop(Pid) ->
 debug(Cmd,Args) -> debug([{Cmd,Args}]).
 debug(CmdArgs) ->
     catch debug(),
-    gtknode_dbgH ! {cmd, Cmd},
+    gtknode_dbgH ! {cmd, CmdArgs},
     ok.
 debug() ->
     case whereis(gtknode_dbg) of
