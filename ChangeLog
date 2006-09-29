@@ -1,5 +1,7 @@
 2006-09-29  Mats Cronqvist  <locmacr@mwlx084>
 
+	* sherk*: sherk basically works. tree-view not yet implemented.
+
 	* gtknode.erl: exported the cmd/2,3 functions. a function api for
 	message sending to the cnode
 

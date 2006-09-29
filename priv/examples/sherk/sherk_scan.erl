@@ -254,18 +254,18 @@ funi(Fun) ->
     case erlang:fun_info(Fun, module) of
 	{_, rpc} ->
 	    case erlang:fun_info(Fun, env) of
-		{_, [_, _, Pid, A, _F, _M]} when pid(Pid), list(A) ->
+		{_, [_, _, Pid, A, _F, _M]} when is_pid(Pid), is_list(A) ->
 		    {rpc, {call_dummy, node(Pid)}};
-		{_, [_, Pid, A, F, M]} ->
+		{_, [_, Pid, A, F, M]} when is_pid(Pid)->
 		    {rpc, {call, node(Pid)}, {M, F, length(A)}};
-		{_, [Pid, A, F, M]} when pid(Pid), list(A) ->
+		{_, [Pid, A, F, M]} when is_pid(Pid), is_list(A) ->
 		    {rpc, {cast, node(Pid)}, {M, F, length(A)}};
 		_X -> 
 		    {rpc}
 	    end;
 	{_, Mod} -> 
 	    case erlang:fun_info(Fun, pid) of
-		{_, Pid} when pid(Pid) -> {'fun', {Mod, node(Pid)}};
+		{_, Pid} when is_pid(Pid) -> {'fun', {Mod, node(Pid)}};
 		{_, X} -> {'fun', {Mod, X}}
 	    end
     end.

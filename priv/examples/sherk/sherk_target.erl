@@ -8,6 +8,7 @@
 -module(sherk_target).
 
 -export([init/0,self_register/1]).
+-export([get_nodes/0]).
 
 -import(dict,[fetch/2,store/3]).
 -import(lists,[foreach/2,reverse/1]).
@@ -126,25 +127,23 @@ send_files(LD) ->
     end.
 
 send_chunks(File, Daddy) ->
-io:fwrite("file ~p~n",[File]),
     {ok,FD} = file:open(File, [read, raw, binary]),
-    Get = fun() -> io:fwrite("getting ~n",[]),file:read(FD, ?CHUNKSIZE) end,
+    Get = fun() -> file:read(FD, ?CHUNKSIZE) end,
     Put = fun(X)-> Daddy ! {self(), chunk, X} end,
     send_chunks(Get(), Get, Put),
     file:close(FD).
 
 send_chunks({ok, Bin}, Get, Put) ->
-io:fwrite("chunk ~n",[]),
     Put(Bin),
     send_chunks(Get(),Get,Put);
 send_chunks(eof, _, Put) -> 
-io:fwrite("eof ~n",[]),
     Put(eof);
 send_chunks({error, Reason}, _, Put) ->
     Put({error, Reason}).
 
-rm(File) -> io:fwrite("delete ~p~n",[File]).
-%%file:delete(File).
+rm(File) -> 
+    %%io:fwrite("delete ~p~n",[File]),
+    file:delete(File).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 pi(P) when pid(P) ->
@@ -180,3 +179,10 @@ send2port(Port, Bin) when binary(Bin) ->
     ?LOG({bad_port, {Port}});
 send2port(Port, Term) ->
     send2port(Port, term_to_binary(Term)).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+get_nodes() ->
+    case filelib:wildcard(filename:join([code:root_dir(),'erts*',bin,epmd])) of
+        [Epmd|_] -> exit({self(),nodes(),os:cmd(Epmd++" -names")});
+        [] -> exit({self(),nodes(),""})
+    end.

@@ -9,8 +9,8 @@
 
 -export([go/7]).
 -export([stop/0,kill/0]).
--export([known_nodes/0]).
 -export([check_dir/1]).
+-export([ass_loaded/2]).
 
 -include_lib("kernel/include/file.hrl").
 
@@ -113,8 +113,7 @@ init() ->
 	    Pids = [spawn_link(T, fun sherk_target:init/0) || T <- Targs],
 	    [ P ! {init,store(daddy,self(),LD)} || P <- Pids],
 	    Timer = erlang:start_timer(fetch(time,LD),self(),{die}),
-	    loop(store(pids,Pids,store(timer,Timer,LD))),
-            fetch(daddy,LD) ! done
+	    loop(store(pids,Pids,store(timer,Timer,LD)))
     end.
 
 loop(LD) ->
@@ -211,9 +210,3 @@ check_dir(Dir) ->
     {ok,#file_info{type=directory, access=read_write}} = 
         file:read_file_info(Dir).
 
-known_nodes() ->
-    Cmd = filename:join([code:root_dir(),bin,epmd])++" -names",
-    Nods = string:tokens(os:cmd(Cmd),"\n"),
-    CPs = [N || ["name",N|_] <- [string:tokens(Str," ") || Str <- Nods]],
-    {ok,Node} = inet:gethostname(),
-    [list_to_atom(CP++"@"++Node) || CP <-CPs]--[node()].

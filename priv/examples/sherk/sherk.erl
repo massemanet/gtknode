@@ -12,10 +12,8 @@
 -export([loop/1]).
 
 -import(filename,[dirname/1,join/1]).
--import(lists,[foreach/2,member/2,flatten/1]).
--import(dict,[from_list/1,fetch/2]).
-
--record(ld,{targets,monitor,combo_indx}).
+-import(lists,[foreach/2,member/2,flatten/1,usort/1,foldl/3]).
+-import(dict,[from_list/1,to_list/1,fetch/2,store/3,new/0]).
 
 -define(LOG(T), sherk:log(process_info(self()),T)).
 -define(LOOP(X), ?MODULE:loop(X)).
@@ -23,24 +21,20 @@
 go() -> spawn_link(fun init/0).
 
 init() ->
-    %% list of all known nodes
-    Targets = sherk_aquire:known_nodes(),
-    foreach(fun(N)->erlang:monitor_node(N,true) end, Targets),
-
+    
     %% start the GUI and load the glade file
     gtknode:start(sherk),
-    f('GN_glade_init',[join([dirname(code:which(sherk)),"sherk.glade"])]),
+    g('GN_glade_init',[join([dirname(code:which(sherk)),"sherk.glade"])]),
 
     %% check the trc source
     check_file(),
     %% set default trc destination
-    f('Gtk_file_chooser_set_current_folder',[aq_filechoose,"/tmp"]),
-    f('Gtk_file_chooser_set_current_folder',[main_filechoose,"/tmp"]),
+    g('Gtk_file_chooser_set_current_folder',[aq_filechoose,"/tmp"]),
+    g('Gtk_file_chooser_set_current_folder',[main_filechoose,"/tmp"]),
 
     %% init nodes treeview
     NodeList = init_list_store([string]),
     init_tree_view(aq_treeview,NodeList,[{0,"Nodes"}]),
-    update_treeview(aq_treeview,[[atom_to_list(T)]||T<-Targets]),
     set_selection_mode(aq_treeview,'GTK_SELECTION_MULTIPLE'),
 
     %% init calls treeview
@@ -57,16 +51,22 @@ init() ->
     hide(call_heavy_radio),
     hide(call_tree_radio),
 
-    loop(#ld{targets=Targets}).
+    Proxy = node(),
+    loop(from_list([{targets,[]},
+                    {aq_mon,undefined},
+                    {proxy,Proxy},
+                    {targ_mon,query_targets(Proxy)}])).
 
 loop(LD) ->
-    Monitor = LD#ld.monitor,
+    AqMon = fetch(aq_mon,LD),
+    TargMon = fetch(targ_mon,LD),
     receive
 	%% user bored
 	quit                                 -> ok;
 	{sherk,{signal,{quit,_}}}            -> ok;
 	{sherk,{signal,{main_window,_}}}     -> ok;
 
+        loopdata                             -> ?LOOP(show_ld(LD));
 	%% user wants stuff hidden
 	{sherk,{signal,{call_window,_}}}     -> hide(call_window),?LOOP(LD);
 	{sherk,{signal,{aq_window,_}}}       -> hide_aq_window(),?LOOP(LD);
@@ -94,33 +94,79 @@ loop(LD) ->
 	{sherk,{signal,{perf_treeview,_}}}   -> ?LOOP(call(perf,LD));
         {sherk,{signal,{call_combobox,_}}}   -> ?LOOP(call(combo,LD));
 
-        %% a target node went away
-        {nodedown, Node}                     -> ?LOOP(update_targets(LD,Node));
+        %% configuring
+        {sherk,{signal,{configure,_}}}       -> show(conf_window),?LOOP(LD);
+        {sherk,{signal,{conf_window,_}}}     -> hide(conf_window),?LOOP(LD);
+        {sherk,{signal,{conf_cancel,_}}}     -> hide(conf_window),?LOOP(LD);
+        {sherk,{signal,{conf_ok,_}}}         -> ?LOOP(conf(LD));
+        {sherk,{signal,{bad_proxy_ok,_}}}    -> bad_proxy_ok(),?LOOP(LD);
+        {sherk,{signal,{bad_proxy_cancel,_}}}-> bad_proxy_cancel(),?LOOP(LD);
 
-        %% aquire proc crashed
-        {'DOWN',Monitor,_,_,Info}            -> ?LOOP(do_aq_stop(LD,Info));
+        %% a target node went away
+        {nodedown, Node}                     -> ?LOOP(downed_target(Node,LD));
+
+        %% aquire proc exited
+        {'DOWN',AqMon,_,_,Info}              -> ?LOOP(do_aq_stop(LD,Info));
+
+        %% we got target data from proxy
+        {timeout, _, re_query}               -> ?LOOP(re_query_targets(LD));
+        {'DOWN',TargMon,_,_,Info}            -> ?LOOP(chk_targets(LD,Info));
         
 	%% user doing some wierd stuff
 	X                                    -> ?LOG([{received,X}]),?LOOP(LD)
     end.
 
+show_ld(LD) ->
+    ?LOG(to_list(LD)),
+    LD.
+
 check_file() ->
     try 
-	Dir = f('Gtk_file_chooser_get_filename',[main_filechoose]),
+	Dir = g('Gtk_file_chooser_get_filename',[main_filechoose]),
 	sherk_tab:check_file(Dir),
-	f('Gtk_widget_set_sensitive',[go_button,true])
+	g('Gtk_widget_set_sensitive',[go_button,true])
     catch 
-	_:_ -> f('Gtk_widget_set_sensitive',[go_button,false])
+	_:_ -> g('Gtk_widget_set_sensitive',[go_button,false])
     end.
 
+
+conf(LD) ->
+    try 
+        NLD = proxy(LD),
+        hide(conf_window),
+        NLD
+    catch
+        _:_ -> 
+            g('Gtk_widget_set_sensitive',[conf_window,false]),
+            show(bad_proxy_window),
+            LD
+    end.
+
+proxy(LD) ->
+    Proxy = list_to_atom(g('Gtk_entry_get_text',[conf_proxy_entry])),
+    Cookie = list_to_atom(g('Gtk_entry_get_text',[conf_cookie_entry])),
+    erlang:set_cookie(Proxy,Cookie),
+    Tick = rpc:call(Proxy,net_kernel,get_net_ticktime,[]),
+    net_kernel:set_net_ticktime(Tick),
+    store(cookie,Cookie,store(proxy,Proxy,LD)).
+
+bad_proxy_cancel() ->
+    g('Gtk_widget_set_sensitive',[conf_window,true]),
+    hide(bad_proxy_window).
+
+bad_proxy_ok() ->
+    g('Gtk_widget_set_sensitive',[conf_window,true]),
+    hide(conf_window),
+    hide(bad_proxy_window).
+
 aq_go(LD) -> 
-    f('Gtk_widget_set_sensitive',[aq_radiobutton_call,false]),
-    f('Gtk_widget_set_sensitive',[aq_radiobutton_proc,false]),
-    f('Gtk_widget_set_sensitive',[aq_filechoose,false]),
-    f('Gtk_widget_set_sensitive',[aq_time_entry,false]),
-    f('Gtk_widget_set_sensitive',[aq_treeview,false]),
-    f('Gtk_widget_set_sensitive',[aq_go_button,false]),
-    f('Gtk_widget_set_sensitive',[aq_stop_button,true]),
+    g('Gtk_widget_set_sensitive',[aq_radiobutton_call,false]),
+    g('Gtk_widget_set_sensitive',[aq_radiobutton_proc,false]),
+    g('Gtk_widget_set_sensitive',[aq_filechoose,false]),
+    g('Gtk_widget_set_sensitive',[aq_time_entry,false]),
+    g('Gtk_widget_set_sensitive',[aq_treeview,false]),
+    g('Gtk_widget_set_sensitive',[aq_go_button,false]),
+    g('Gtk_widget_set_sensitive',[aq_stop_button,true]),
     Time = aq_get_time(),
     Flags = aq_get_flags(),
     RTPs = aq_get_rtps(Flags),
@@ -136,45 +182,44 @@ aq_go(LD) ->
           {cookie,Cookie},
           {dest,Dest}]),
     P = sherk_aquire:go(Time,Flags,RTPs,Procs,Targs,Cookie,Dest),
-    LD#ld{monitor=erlang:monitor(process,P)}.
+    store(aq_mon,erlang:monitor(process,P),LD).
 
 aq_stop(LD) -> 
     sherk_aquire:stop(),
-    do_aq_stop(LD,aq_stop_wait(LD#ld.monitor)).
+    do_aq_stop(LD,aq_stop_wait(fetch(aq_mon,LD))).
 
 aq_stop_wait(Monitor) ->
     receive
-        {sherk_aquire, done} -> erlang:demonitor(Monitor),done;
         {'DOWN',Monitor,_Type,_Object,Info} -> Info
     end.
 
 do_aq_stop(LD,Reason) -> 
-    ?LOG([{aqure_finshed,Reason}]),
-    f('Gtk_widget_set_sensitive',[aq_radiobutton_call,true]),
-    f('Gtk_widget_set_sensitive',[aq_radiobutton_proc,true]),
-    f('Gtk_widget_set_sensitive',[aq_filechoose,true]),
-    f('Gtk_widget_set_sensitive',[aq_time_entry,true]),
-    f('Gtk_widget_set_sensitive',[aq_treeview,true]),
-    f('Gtk_widget_set_sensitive',[aq_stop_button,false]),    
+    ?LOG([{aquire_finshed,Reason}]),
+    g('Gtk_widget_set_sensitive',[aq_radiobutton_call,true]),
+    g('Gtk_widget_set_sensitive',[aq_radiobutton_proc,true]),
+    g('Gtk_widget_set_sensitive',[aq_filechoose,true]),
+    g('Gtk_widget_set_sensitive',[aq_time_entry,true]),
+    g('Gtk_widget_set_sensitive',[aq_treeview,true]),
+    g('Gtk_widget_set_sensitive',[aq_stop_button,false]),    
     aq_check(),
-    LD#ld{monitor=undefined}.
+    store(aq_mon,undefined,LD).
 
 aq_check() ->
     try
-        Dir = f('Gtk_file_chooser_get_filename',[aq_filechoose]),
+        Dir = g('Gtk_file_chooser_get_filename',[aq_filechoose]),
         sherk_aquire:check_dir(Dir),
         [_|_] = get_selected_data(aq_treeview,0),
-        list_to_integer(f('Gtk_entry_get_text',[aq_time_entry])),
-    	f('Gtk_widget_set_sensitive',[aq_go_button,true])
+        list_to_integer(g('Gtk_entry_get_text',[aq_time_entry])),
+    	g('Gtk_widget_set_sensitive',[aq_go_button,true])
     catch 
-	_:_ -> f('Gtk_widget_set_sensitive',[aq_go_button,false])
+	_:_ -> g('Gtk_widget_set_sensitive',[aq_go_button,false])
     end.
 
 aq_get_time() ->
-    1000*list_to_integer(f('Gtk_entry_get_text',[aq_time_entry])).
+    1000*list_to_integer(g('Gtk_entry_get_text',[aq_time_entry])).
 
 aq_get_flags() ->
-    case f('Gtk_toggle_button_get_active',[aq_radiobutton_proc]) of
+    case g('Gtk_toggle_button_get_active',[aq_radiobutton_proc]) of
         true -> proc_flags();
         false -> call_flags()
     end.
@@ -189,12 +234,51 @@ aq_get_nodes() ->
     [list_to_atom(N) || N<-get_selected_data(aq_treeview,0)].
 
 aq_get_dest() ->
-    f('Gtk_file_chooser_get_filename',[aq_filechoose]).
+    g('Gtk_file_chooser_get_filename',[aq_filechoose]).
 
-update_targets(LD, BadNode) ->
-    Ts = LD#ld.targets--[BadNode],
+re_query_targets(LD) ->
+    store(targ_mon,query_targets(fetch(proxy,LD)),LD).
+
+query_targets(Proxy) ->
+    sherk_aquire:ass_loaded(Proxy,sherk_target),
+    erlang:monitor(process,spawn(Proxy,sherk_target,get_nodes,[])).
+
+chk_targets(LD,Atom) when is_atom(Atom) -> ?LOG({no_proxy,Atom}),LD;
+chk_targets(LD,{Pid,Nodes,EpmdStr}) when is_pid(Pid) ->
+    try
+        erlang:start_timer(5000,self(),re_query),
+        OldTargs = fetch(targets,LD),
+        [_,Host] = string:tokens(atom_to_list(node(Pid)),"@"),
+        Nods = string:tokens(EpmdStr,"\n"),
+        CPs = [N || ["name",N|_] <- [string:tokens(Str," ") || Str <- Nods]],
+        EpmdTargs = [list_to_atom(CP++"@"++Host) || CP <-CPs],
+        Targs = usort(Nodes++EpmdTargs)--[node()],
+        foldl(fun new_target/2, LD, Targs--OldTargs)
+    catch 
+        _:R -> ?LOG([{r,R},{pid,Pid},{nodes,Nodes},{epmd,EpmdStr}]),LD
+    end.
+
+downed_target(Node,LD) ->
+    OTs = fetch(targets,LD),
+    case member(Node,OTs) of
+        false -> ?LOG([{downed_target_already_gone,Node},{targets,OTs}]), LD;
+        true -> update_targets(fetch(targets,LD) -- [Node], LD)
+    end.
+
+new_target(Node,LD) ->
+    OTs = fetch(targets,LD),
+    case member(Node,OTs) of
+        true -> 
+            ?LOG([{new_target_already_member,Node},{targets,OTs}]),LD;
+        false -> 
+            catch erlang:set_cookie(Node,fetch(cookie,LD)),
+            erlang:monitor_node(Node,true),
+            update_targets([Node|OTs], LD)
+    end.
+
+update_targets(Ts,LD) ->
     update_treeview(aq_treeview,[[atom_to_list(T)]||T<-Ts]),
-    LD#ld{targets=Ts}.
+    store(targets,Ts,LD).
 
 proc_flags() ->
     ['procs','running','garbage_collection',
@@ -204,17 +288,17 @@ call_flags() ->
     ['call','return_to','arity'|proc_flags()].
 
 perf(LD) ->
-    f('Gtk_widget_set_sensitive',[go_button,false]),
-    File = f('Gtk_file_chooser_get_filename',[main_filechoose]),
+    g('Gtk_widget_set_sensitive',[go_button,false]),
+    File = g('Gtk_file_chooser_get_filename',[main_filechoose]),
     sherk_tab:assert(File),
     List = sherk_list:go(perf),
     update_treeview(perf_treeview,List),
     Indexs = update_combo(call_combobox,List),
-    f('Gtk_widget_set_sensitive',[go_button,true]),
-    LD#ld{combo_indx=Indexs}.
+    g('Gtk_widget_set_sensitive',[go_button,true]),
+    store(combo,Indexs,LD).
 
 update_combo(Combobox,List) ->
-    Model = f('Gtk_combo_box_get_model',[Combobox]),
+    Model = g('Gtk_combo_box_get_model',[Combobox]),
     list_clear(Model),
     list_insert(Model,[[H] || [_,H|_] <- List]),
     from_list(indexs([[H] || [H|_] <- List],0)).
@@ -224,12 +308,12 @@ indexs([[P]|R],N) -> flatten([[{N,P},{P,N}]|indexs(R,N+1)]).
 
 call(perf,LD) -> 
     [Pid] = get_selected_data(perf_treeview,0),
-    f('Gtk_combo_box_set_active',[call_combobox,fetch(Pid,LD#ld.combo_indx)]),
+    g('Gtk_combo_box_set_active',[call_combobox,fetch(Pid,fetch(combo,LD))]),
     call(Pid),
     LD;
 call(combo,LD) ->
-    N = f('Gtk_combo_box_get_active',[call_combobox]),
-    Pid = fetch(N,LD#ld.combo_indx),
+    N = g('Gtk_combo_box_get_active',[call_combobox]),
+    Pid = fetch(N,fetch(combo,LD)),
     call(Pid),
     LD.
 call(Pid) ->
@@ -238,78 +322,79 @@ call(Pid) ->
     update_treeview(call_treeview,List).
 
 update_treeview(View,List) ->
-    Model = f('Gtk_tree_view_get_model',[View]),
+    ?LOG({rows,length(List)}),
+    Model = g('Gtk_tree_view_get_model',[View]),
     hide(View),
     list_clear(Model),
+    g('Gtk_widget_freeze_child_notify',[View]),
     list_insert(Model, List),
+    g('Gtk_widget_thaw_child_notify',[View]),
     show(View).
 
 set_selection_mode(View,Mode) ->
-    Sel = f('Gtk_tree_view_get_selection',[View]),
-    f('Gtk_tree_selection_set_mode',[Sel,Mode]).
+    Sel = g('Gtk_tree_view_get_selection',[View]),
+    g('Gtk_tree_selection_set_mode',[Sel,Mode]).
 
 get_selected_data(View,Col) ->
-    Model = f('Gtk_tree_view_get_model',[View]),
-    get_data(Model,Col,f('GN_tree_view_get_selected',[View])).
+    Model = g('Gtk_tree_view_get_model',[View]),
+    get_data(Model,Col,g('GN_tree_view_get_selected',[View])).
 
 get_data(_Model,_Col,[]) -> [];
 get_data(Model,Col,[Path|Paths]) ->
-    f('Gtk_tree_model_get_iter_from_string',[Model,daddy,Path]),
-    f('GN_value_unset',[val]),
-    f('Gtk_tree_model_get_value',[Model,daddy,Col,val]),
-    [f('GN_value_get',[val])|get_data(Model,Col,Paths)].
+    g('Gtk_tree_model_get_iter_from_string',[Model,daddy,Path]),
+    g('GN_value_unset',[val]),
+    g('Gtk_tree_model_get_value',[Model,daddy,Col,val]),
+    [g('GN_value_get',[val])|get_data(Model,Col,Paths)].
 
 show_aq_window() ->
     show(aq_window),
-    f('Gtk_check_menu_item_set_active',[show_aquire,true]).
+    g('Gtk_check_menu_item_set_active',[show_aquire,true]).
 hide_aq_window() ->
     hide(aq_window),
-    f('Gtk_check_menu_item_set_active',[show_aquire,false]).
+    g('Gtk_check_menu_item_set_active',[show_aquire,false]).
 toggle_aq_window() ->
-    case f('Gtk_check_menu_item_get_active',[show_aquire]) of
+    case g('Gtk_check_menu_item_get_active',[show_aquire]) of
 	true -> show_aq_window();
 	false -> hide_aq_window()
     end.
 
-show(W) -> f('Gtk_widget_show',[W]).
-hide(W) -> f('Gtk_widget_hide',[W]).
+show(W) -> g('Gtk_widget_show',[W]).
+hide(W) -> g('Gtk_widget_hide',[W]).
 
-list_clear(List) -> f('Gtk_list_store_clear', [List]).
+list_clear(List) -> g('Gtk_list_store_clear', [List]).
 
 init_list_store(Cols)->
-    f('Gtk_list_store_newv',[length(Cols),Cols]).
+    g('Gtk_list_store_newv',[length(Cols),Cols]).
 
-list_insert(_,[]) -> ok;
-list_insert(Store,[H|T]) -> 
-    f('Gtk_list_store_append',[Store,iter]),
-    list_insert_row(Store,H,0),
-    list_insert(Store,T).
+list_insert(Store,Rows) ->
+    Row_f = fun() -> {'Gtk_list_store_append',[Store,iter]} end,
+    Col_f = fun(Row) -> foldl(fun col_f/2, {0,Store,[]}, Row) end,
+    g(flatten([[Row_f()|element(3,Col_f(Row))] || Row<-Rows])).
 
-list_insert_row(_Store,[],_) -> ok;
-list_insert_row(Store,[I|Is],N) ->
-    f('GN_value_set',[val,I]),
-    f('Gtk_list_store_set_value',[Store,iter,N,val]),
-    list_insert_row(Store,Is,N+1).
+col_f(Val,{N,Store,O}) ->
+    {N+1,Store,
+     [{'GN_value_set',[val,Val]},
+      {'Gtk_list_store_set_value',[Store,iter,N,val]}|O]}.
 
 init_combobox() ->
     CallComboList = init_list_store([string]),
-    f('Gtk_combo_box_set_model',[call_combobox,CallComboList]),
-    Rend = f('Gtk_cell_renderer_text_new',[]),
-    f('Gtk_cell_layout_pack_start',[call_combobox,Rend,false]),
-    f('Gtk_cell_layout_add_attribute',[call_combobox,Rend,"text",0]).
+    g('Gtk_combo_box_set_model',[call_combobox,CallComboList]),
+    Rend = g('Gtk_cell_renderer_text_new',[]),
+    g('Gtk_cell_layout_pack_start',[call_combobox,Rend,false]),
+    g('Gtk_cell_layout_add_attribute',[call_combobox,Rend,"text",0]).
 
 init_tree_view(TreeView,Model,Cols) ->
-    f('Gtk_tree_view_set_model',[TreeView,Model]),
+    g('Gtk_tree_view_set_model',[TreeView,Model]),
     foreach(fun({DC,T})->init_tree_view_column(TreeView,DC,T) end,Cols).
 
 init_tree_view_column(TreeView,DataCol,Title) ->
-    Col = f('Gtk_tree_view_column_new',[]),
-    Renderer = f('Gtk_cell_renderer_text_new',[]),
-    f('Gtk_tree_view_column_pack_start',[Col,Renderer,false]),
-    f('Gtk_tree_view_column_set_title', [Col,Title]),
-    f('Gtk_tree_view_column_set_resizable',[Col,true]),
-    f('Gtk_tree_view_column_add_attribute',[Col,Renderer,"text",DataCol]),
-    f('Gtk_tree_view_append_column',[TreeView,Col]).
+    Col = g('Gtk_tree_view_column_new',[]),
+    Renderer = g('Gtk_cell_renderer_text_new',[]),
+    g('Gtk_tree_view_column_pack_start',[Col,Renderer,false]),
+    g('Gtk_tree_view_column_set_title', [Col,Title]),
+    g('Gtk_tree_view_column_set_resizable',[Col,true]),
+    g('Gtk_tree_view_column_add_attribute',[Col,Renderer,"text",DataCol]),
+    g('Gtk_tree_view_append_column',[TreeView,Col]).
 
 tree_insert(_Store,_Path,[]) -> ok;
 tree_insert(Store,Path,[{Str,SubList}|T]) -> 
@@ -321,25 +406,29 @@ tree_insert(Store,Path,[Str|T]) ->
     tree_insert(Store,[hd(Path)+1|tl(Path)],T).
 
 tree_insert_str(Store,Path,Str) ->
-    f('GN_value_set',[val,Str]),
+    g('GN_value_set',[val,Str]),
     case Path of
 	[I] -> 
-	    f('Gtk_tree_store_insert',[Store,iter,'NULL',I]);
+	    g('Gtk_tree_store_insert',[Store,iter,'NULL',I]);
 	[I|D] -> 
-	    f('Gtk_tree_model_get_iter_from_string',[Store,daddy,pth(D)]),
-	    f('Gtk_tree_store_insert',[Store,iter,daddy,I])
+	    g('Gtk_tree_model_get_iter_from_string',[Store,daddy,pth(D)]),
+	    g('Gtk_tree_store_insert',[Store,iter,daddy,I])
     end,
-    f('Gtk_tree_store_set_value', [Store,iter,0,val]).
+    g('Gtk_tree_store_set_value', [Store,iter,0,val]).
 
 pth(P) -> pth(P,[]).
 pth([I],O) -> [$0+I|O];
 pth([H|T],O) -> pth(T,[$:,$0+H|O]).
 
-f(C,As) ->
-    sherk ! {self(),[{C,As}]},
-    receive 
-	{sherk,{reply,[{ok,Rep}]}} -> Rep; 
-	{sherk,{reply,[{error,Rep}]}} -> {error,C,Rep}
+g(C,As) -> g([{C,As}]).
+g(CAs) ->
+    case gtknode:cmd(sherk,CAs) of
+        [{ok,Rep}] -> Rep;
+	Reps -> 
+            case [R || {error,R} <- Reps] of
+                [] -> ok;
+                Es -> throw({errors,Es})
+            end
     end.
 
 log(ProcInfo,Term) when not is_list(Term) -> log(ProcInfo,[Term]);
