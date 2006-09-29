@@ -1,3 +1,8 @@
+2006-09-29  Mats Cronqvist  <locmacr@mwlx084>
+
+	* gtknode.erl: exported the cmd/2,3 functions. a function api for
+	message sending to the cnode
+
 2006-09-22  Mats Cronqvist  <locmacr@mwlx084>
 
 	* sherk.erl: fixed the call window combobox

@@ -8,7 +8,7 @@
 -module(gtknode).
 -export([start/1,stop/1]).
 -export([debug/0,debug/1,debug/2]).
--export([f/2,f/3]).
+-export([cmd/2,cmd/3]).
 
 %%-export([recv/0]).
 %%-export([glade/1,widget_get_attr/1,new_gvalue/2]).
@@ -77,16 +77,12 @@ loopDBGH() ->
 	    gtknode_dbg ! {self(),Cmd},loopDBGH()
     end.
 
-f(GUI,C,As) -> f(GUI,[{C,As}]).
-f(GUI,CAs) ->
+cmd(GUI,C,As) -> cmd(GUI,[{C,As}]).
+
+cmd(GUI,CAs) ->
     GUI ! {self(),CAs},
     receive 
-	{GUI,{reply,Reps}} -> 
-  	    case [E || {error,E} <- Reps] of 
-		[] -> {ok,Rep} = hd(lists:reverse(Reps)), Rep; 
-		_ -> Reps 
-	    end; 
-	X -> exit({what,X}) 
+	{GUI,{reply,Reps}} -> Reps
     end.
 
 %%%-------------------------------------------------------------------

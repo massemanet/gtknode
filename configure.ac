@@ -22,6 +22,8 @@ AC_SUBST([ERLCFLAGS], [$erlcflags])
 dnl Python-related configuration (for the generator).
 AM_PATH_PYTHON
 
+dnl AM_PATH_GTK(2.6,[], AC_MSG_ERROR(Cannot find GTK))
+
 dnl Information about GTK+2.
 PKG_CHECK_MODULES(GTK, [gmodule-2.0 libglade-2.0 gtk+-2.0])
 dnl Get the directory that contains the GTK+ include files.
