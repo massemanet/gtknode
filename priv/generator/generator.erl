@@ -10,18 +10,18 @@
 -module(generator).
 
 -export([go/1]).
--import(filename, [join/1,dirname/1]).
+-import(filename, [join/1,dirname/1,basename/1]).
 -import(io, [put_chars/2, get_line/2]).
 -import(lists,[foreach/2, map/2,foldl/3,reverse/1, sort/1]).
 
 -record(func, {black=no,cname,pref,ret,const=no,paras=[]}).
 -record(type, {what,cname,gtype,etype,cast}).
 
-go([Proxy, Vsn, StructsFile | Files]) ->
+go([Root, Vsn, StructsFile | Files]) ->
     ets_new(types),
     ets_new(funcs),
     ets_new(bogus, [{keypos, 1}]),
-    get_doc_links(Proxy),
+    get_doc_links(Root),
     do_types_loop(Files), % populate the type table
     lists(),
     structs(StructsFile),
@@ -36,25 +36,63 @@ doc_header(FD)->
 doc_footer(FD)->
     io:fwrite(FD,"</body></html>",[]).
 
-get_doc_links("")-> ok;
-get_doc_links(Proxy)-> 
-    case string:tokens(Proxy,":") of
-	"" -> ok;
-	[H,P] -> http:set_options([{proxy,{{H,list_to_integer(P)},[]}}])
-    end,
-    foreach(fun doc_links/1, ["gtk","glib","gdk","gobject","gdk-pixbuf"]).
-
-doc_links(X)-> 
-    URL = "http://developer.gnome.org/doc/API/2.0/"++X++"/ix01.html",
-    RE = "<a href=\"[A-Za-z-]+.html#id[0-9]+\">[a-z_]+ \\(\\)</a>",
-    try 
-	{ok,{_,_,S}} = http:request(get,{URL,[]},[{timeout,5000}],[]),
-	{match,Ms} = regexp:matches(S,RE),
-	io:fwrite("got ~p links from ~s~n",[length(Ms),URL]),
-	foreach(fun({St,Le})-> do_doc_link(URL,string:substr(S,St,Le)) end, Ms)
-    catch 
-	error:R -> io:fwrite("get_doc_links for ~s failed:~p~n",[X,R])
+get_doc_links("no")-> 
+    %% don't put links in the html files
+    ok;
+get_doc_links("yes")-> 
+    %% don't put links in the html files
+    io:fwrite("configure flag --enable-gtkdoclinks takes an argument",[]);
+get_doc_links(Root)-> 
+    %% put in links to some place like these;
+    %% "/usr/share/doc/libgtk2.0-doc",
+    %% "http://developer.gnome.org/doc/API/2.0"
+    F = fun(D) -> put_links(D,Root) end,
+    try foreach(F, ["gtk","glib","gdk","gobject","gdk-pixbuf"])
+    catch _:R -> io:fwrite("doc_links failed:~p~n",[R])
     end.
+
+put_links(D,Root) ->
+    Rt = string_join([Root,D,"ix01.html"],"/"),
+    doc_links(Rt,get_ix(Rt)).
+
+get_ix("http://"++_ = Doc) -> get_ix_http(Doc);
+get_ix("file://"++Doc) -> get_ix_file(Doc);
+get_ix("/"++_ = Doc) -> get_ix_file(Doc).
+
+get_ix_file(Doc) ->
+    {ok,Bin} = file:read_file(Doc),
+    binary_to_list(Bin).
+
+get_ix_http(Doc) ->
+    case os:getenv("http_proxy") of
+        false -> ok;
+        Proxy ->
+            %% [http://][username:password@]proxyhost:port[/]
+            case string:tokens(Proxy,"/")  of
+                ["http:",Prx] -> ok;
+                [Prx] -> ok
+            end,
+            case string:tokens(Prx,"@") of
+                [_,Px] -> throw(proxy_authentication_not_supported);
+                [Px] -> ok
+            end,
+            [H,P]  = string:tokens(Px,":"),
+            http:set_options([{proxy,{{H,list_to_integer(P)},[]}}])
+    end,
+    ReqPid = spawn(fun() -> exit(http:request(Doc)) end),
+    ReqMon = erlang:monitor(process,ReqPid),
+    receive
+        {'DOWN',ReqMon,_,_,{ok,{_,_,S}}} -> S;
+        {'DOWN',ReqMon,_,_,I} -> throw({bad_http_reply,I})
+    after 
+        9999 -> erlang:demonitor(ReqMon), exit(ReqPid,kill), throw(http_timeout)
+    end.
+
+doc_links(Root,S)-> 
+    RE = "<a href=\"[A-Za-z-]+.html#id[0-9]+\">[a-z_]+ \\(\\)</a>",
+    {match,Ms} = regexp:matches(S,RE),
+    io:fwrite("got ~p links for ~s~n",[length(Ms),basename(dirname(Root))]),
+    foreach(fun({St,Le})-> do_doc_link(Root,string:substr(S,St,Le)) end, Ms).
 
 do_doc_link(URL,S) ->
     case string:tokens(S,"=>< \"") of

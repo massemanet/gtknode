@@ -16,12 +16,8 @@ EXTRA_DIST = bio.erl generator.erl h2def.py \
 	g_predefined.defs gdk_predefined.defs gtk_predefined.defs \
 	$(GEN_DOCS)
 
-# we try to access developer.gnome.org in order to generate documentation
+# we try to generate documentation
 # that has poper links to the GTK docs
-# set PROXY = "" to disable this
-# set PROXY = ":" if you don't have a proxy
-# set proxy = "proxy.host.name:port" if you have a proxy
-PROXY = "proxy.eth.ericsson.se:8080"
 
 # 1st part of the generator, in Python.
 FIRSTGEN = $(srcdir)/h2def.py
@@ -60,10 +56,16 @@ BLACKLISTS = $(srcdir)/g_black.txt $(srcdir)/gdk_black.txt \
 
 all: $(GEN_INCLUDES)
 
+
+# GTK_DOC_ROOT can be;
+# "" (no links to gtk docs)
+# http://<some web docroot>
+# file://<some local docroot>
+
 $(GEN_DOCS) $(GEN_INCLUDES): $(BEAMFILES) $(INTERMEDIATES) $(STRUCTS) \
 		$(srcdir)/g_black.txt $(srcdir)/gdk_black.txt \
 		$(srcdir)/gtk_black.txt
-	$(ERL) -noinput -run generator go $(PROXY) \
+	$(ERL) -noinput -run generator go "@GTKDOCLINKS@" \
 		"$(GTKVSN)" "$(STRUCTS)" \
 		g $(G_I) $(G_W_I) $(srcdir)/g_black.txt \
 		g_generated.h g_funcs.html \

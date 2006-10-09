@@ -7,7 +7,7 @@
 %%%-------------------------------------------------------------------
 -module(sherk_aquire).
 
--export([go/7]).
+-export([go/6]).
 -export([stop/0,kill/0]).
 -export([check_dir/1]).
 -export([ass_loaded/2]).
@@ -26,8 +26,8 @@
 %%% sherk_aquire:go(1000,[call,timestamp],[{'_','_'}],all,[mwux005@mwux005],foo,{file,"/tmp/sherk/gruff",0,"/tmp"}).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-go(Time,Flags,RTPs,Procs,Targs,Cookie,Dest) -> 
-    check_and_spawn(Time,Flags,RTPs,Procs,Targs,Cookie,Dest).
+go(Time,Flags,RTPs,Procs,Targs,Dest) -> 
+    check_and_spawn(Time,Flags,RTPs,Procs,Targs,Dest).
 
 stop() -> catch (sherk_host ! stop).
 
@@ -37,23 +37,22 @@ kill() -> catch exit(erlang:whereis(sherk_host),kill).
 %% most argument checking is done here. some pid-related checking has 
 %% to be deferred to the target 
 
-check_and_spawn(Time,Flags,RTPs,Procs,Targs,Cookie,Dest) ->
+check_and_spawn(Time,Flags,RTPs,Procs,Targs,Dest) ->
     LD = from_list([{time,chk_time(Time)},
 		    {flags,chk_flags(Flags)},
 		    {rtps,chk_rtps(RTPs)},
 		    {procs,chk_procs(Procs)},
 		    {dest,chk_dest(Dest)},
-		    {targs,chk_conns(Targs,Cookie)},
+		    {targs,chk_conns(Targs)},
 		    {daddy,self()}]),
     
     (Pid = spawn(fun init/0)) ! {init,LD},
     Pid.
 
-chk_conns(Targs,Cookie) -> map(fun(T)->chk_conn(T,Cookie) end,Targs).
+chk_conns(Targs) -> map(fun(T)->chk_conn(T) end,Targs).
 
-chk_conn(T,_) when T==node() -> T;
-chk_conn(T,Cookie) -> 
-    erlang:set_cookie(T,Cookie), 
+chk_conn(T) when T==node() -> T;
+chk_conn(T) -> 
     case net_adm:ping(T) of
 	pong -> ass_loaded(T,sherk_target);
 	pang -> exit({connection_failed,T})

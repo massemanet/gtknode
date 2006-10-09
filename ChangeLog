@@ -1,3 +1,13 @@
+2006-10-09  Mats Cronqvist  <locmacr@mwlx084>
+
+	* priv/generator/generator.erl: generation of doc links fixed
+
+	* priv/examples/sherk/sherk_aquire.erl: better cookie handling
+
+	* priv/examples/sherk/sherk.erl: 
+	target monitoring logic improved 
+	better cookie handling
+
 2006-09-29  Mats Cronqvist  <locmacr@mwlx084>
 
 	* sherk*: sherk basically works. tree-view not yet implemented.

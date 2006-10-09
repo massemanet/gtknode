@@ -13,7 +13,7 @@
 
 -import(filename,[dirname/1,join/1]).
 -import(lists,[foreach/2,member/2,flatten/1,usort/1,foldl/3]).
--import(dict,[from_list/1,to_list/1,fetch/2,store/3,new/0]).
+-import(dict,[from_list/1,to_list/1,fetch/2,store/3,new/0,append/3]).
 
 -define(LOG(T), sherk:log(process_info(self()),T)).
 -define(LOOP(X), ?MODULE:loop(X)).
@@ -50,12 +50,13 @@ init() ->
     %% hide the radio buttons
     hide(call_heavy_radio),
     hide(call_tree_radio),
-
-    Proxy = node(),
-    loop(from_list([{targets,[]},
+    
+    loop(from_list([{targs,[]},
+                    {bad_targs,[]},
                     {aq_mon,undefined},
-                    {proxy,Proxy},
-                    {targ_mon,query_targets(Proxy)}])).
+                    {proxy,node()},
+                    {orig_ticktime,net_kernel:get_net_ticktime()},
+                    {targ_mon,query_targs(node())}])).
 
 loop(LD) ->
     AqMon = fetch(aq_mon,LD),
@@ -109,8 +110,8 @@ loop(LD) ->
         {'DOWN',AqMon,_,_,Info}              -> ?LOOP(do_aq_stop(LD,Info));
 
         %% we got target data from proxy
-        {timeout, _, re_query}               -> ?LOOP(re_query_targets(LD));
-        {'DOWN',TargMon,_,_,Info}            -> ?LOOP(chk_targets(LD,Info));
+        {timeout, _, re_query}               -> ?LOOP(re_query_targs(LD));
+        {'DOWN',TargMon,_,_,Info}            -> ?LOOP(chk_targs(LD,Info));
         
 	%% user doing some wierd stuff
 	X                                    -> ?LOG([{received,X}]),?LOOP(LD)
@@ -143,12 +144,21 @@ conf(LD) ->
     end.
 
 proxy(LD) ->
-    Proxy = list_to_atom(g('Gtk_entry_get_text',[conf_proxy_entry])),
-    Cookie = list_to_atom(g('Gtk_entry_get_text',[conf_cookie_entry])),
-    erlang:set_cookie(Proxy,Cookie),
-    Tick = rpc:call(Proxy,net_kernel,get_net_ticktime,[]),
+    case list_to_atom(g('Gtk_entry_get_text',[conf_proxy_entry])) of
+        "" -> 
+            Proxy = node(),
+            Cookie = erlang:get_cookie(),
+            Tick = fetch(orig_ticktime,LD);
+        Proxy -> 
+            Cookie = list_to_atom(g('Gtk_entry_get_text',[conf_cookie_entry])),
+            erlang:set_cookie(Proxy,Cookie),
+            Tick = rpc:call(Proxy,net_kernel,get_net_ticktime,[])
+    end,
     net_kernel:set_net_ticktime(Tick),
-    store(cookie,Cookie,store(proxy,Proxy,LD)).
+    store(cookie,Cookie,
+          store(proxy,Proxy,
+                store(targs,[],
+                      store(bad_targs,[],LD)))).
 
 bad_proxy_cancel() ->
     g('Gtk_widget_set_sensitive',[conf_window,true]),
@@ -172,16 +182,14 @@ aq_go(LD) ->
     RTPs = aq_get_rtps(Flags),
     Procs = all,
     Targs = aq_get_nodes(),
-    Cookie = erlang:get_cookie(),
     Dest = {file,aq_get_dest(),0,"/tmp"},
     ?LOG([{time,Time},
           {flags,Flags},
           {rTPs,RTPs},
           {procs,Procs},
           {targs,Targs},
-          {cookie,Cookie},
           {dest,Dest}]),
-    P = sherk_aquire:go(Time,Flags,RTPs,Procs,Targs,Cookie,Dest),
+    P = sherk_aquire:go(Time,Flags,RTPs,Procs,Targs,Dest),
     store(aq_mon,erlang:monitor(process,P),LD).
 
 aq_stop(LD) -> 
@@ -236,49 +244,60 @@ aq_get_nodes() ->
 aq_get_dest() ->
     g('Gtk_file_chooser_get_filename',[aq_filechoose]).
 
-re_query_targets(LD) ->
-    store(targ_mon,query_targets(fetch(proxy,LD)),LD).
+re_query_targs(LD) ->
+    store(targ_mon,query_targs(fetch(proxy,LD)),LD).
 
-query_targets(Proxy) ->
+query_targs(Proxy) ->
     sherk_aquire:ass_loaded(Proxy,sherk_target),
     erlang:monitor(process,spawn(Proxy,sherk_target,get_nodes,[])).
 
-chk_targets(LD,Atom) when is_atom(Atom) -> ?LOG({no_proxy,Atom}),LD;
-chk_targets(LD,{Pid,Nodes,EpmdStr}) when is_pid(Pid) ->
+chk_targs(LD,Atom) when is_atom(Atom) -> ?LOG({no_proxy,Atom}),LD;
+chk_targs(LD,{Pid,Nodes,EpmdStr}) when is_pid(Pid) ->
     try
         erlang:start_timer(5000,self(),re_query),
-        OldTargs = fetch(targets,LD),
+        OldTargs = fetch(targs,LD),
+        BadTargs = fetch(bad_targs,LD),
         [_,Host] = string:tokens(atom_to_list(node(Pid)),"@"),
         Nods = string:tokens(EpmdStr,"\n"),
         CPs = [N || ["name",N|_] <- [string:tokens(Str," ") || Str <- Nods]],
         EpmdTargs = [list_to_atom(CP++"@"++Host) || CP <-CPs],
         Targs = usort(Nodes++EpmdTargs)--[node()],
-        foldl(fun new_target/2, LD, Targs--OldTargs)
+        foldl(fun new_target/2, LD, (Targs--OldTargs)--BadTargs)
     catch 
         _:R -> ?LOG([{r,R},{pid,Pid},{nodes,Nodes},{epmd,EpmdStr}]),LD
     end.
 
 downed_target(Node,LD) ->
-    OTs = fetch(targets,LD),
-    case member(Node,OTs) of
-        false -> ?LOG([{downed_target_already_gone,Node},{targets,OTs}]), LD;
-        true -> update_targets(fetch(targets,LD) -- [Node], LD)
+    Ts = fetch(targs,LD),
+    BTs = fetch(bad_targs,LD),
+    case {member(Node,Ts),member(Node,BTs)} of
+        {false,true} -> LD;
+        {true,false} -> update_targs(Ts--[Node], append(bad_targs,Node,LD));
+        {false,false}-> wierd(down,Node,Ts,BTs),append(bad_targs,Node,LD);
+        {true,true}  -> wierd(down,Node,Ts,BTs),update_targs(Ts--[Node], LD)
     end.
 
 new_target(Node,LD) ->
-    OTs = fetch(targets,LD),
-    case member(Node,OTs) of
-        true -> 
-            ?LOG([{new_target_already_member,Node},{targets,OTs}]),LD;
-        false -> 
-            catch erlang:set_cookie(Node,fetch(cookie,LD)),
-            erlang:monitor_node(Node,true),
-            update_targets([Node|OTs], LD)
+    Ts = fetch(targs,LD),
+    BTs = fetch(bad_targs,LD),
+    case {member(Node,Ts),member(Node,BTs)} of
+        {false,false} -> new_target(Node,Ts,LD);
+        {false,true} -> new_target(Node,Ts,store(bad_targs,BTs--[Node],LD));
+        {true,false} -> wierd(up,Node,Ts,BTs),LD;
+        {true,true} -> wierd(up,Node,Ts,BTs),store(bad_targs,BTs--[Node],LD)
     end.
 
-update_targets(Ts,LD) ->
+new_target(Node,Ts,LD) ->
+    catch erlang:set_cookie(Node,fetch(cookie,LD)),
+    erlang:monitor_node(Node,true),
+    update_targs([Node|Ts], LD).
+
+wierd(UpDown,Node,Ts,BTs) ->
+    ?LOG([{node_came,UpDown},{node,Node},{targs,Ts},{bad_targs,BTs}]).
+
+update_targs(Ts,LD) ->
     update_treeview(aq_treeview,[[atom_to_list(T)]||T<-Ts]),
-    store(targets,Ts,LD).
+    store(targs,Ts,LD).
 
 proc_flags() ->
     ['procs','running','garbage_collection',
@@ -432,5 +451,5 @@ g(CAs) ->
     end.
 
 log(ProcInfo,Term) when not is_list(Term) -> log(ProcInfo,[Term]);
-log(ProcInfo,Term) ->
-    error_logger:info_report([{in,CF}||{current_function,CF}<-ProcInfo]++Term).
+log(ProcInfo,List) ->
+    error_logger:info_report([{in,CF}||{current_function,CF}<-ProcInfo]++List).
