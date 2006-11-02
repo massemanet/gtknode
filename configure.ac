@@ -58,7 +58,6 @@ AC_CONFIG_FILES([ \
 	priv/generator/Makefile \
 	priv/examples/Makefile \
 	priv/examples/points/Makefile \
-	priv/examples/sherk/Makefile \
 	priv/examples/top/Makefile \
 	doc/Makefile \
 	])
