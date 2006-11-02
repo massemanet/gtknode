@@ -22,7 +22,7 @@ int gn_start_cnode(char **argv) {
   strcat(rem_node_name,"@");
   strcat(rem_node_name,REMHOST);
   rem_regname = g_strdup(REMREG);
-  g_print("I am %s, you are %s\n", NODE_NAME, rem_node_name);
+  g_print("I am %s, you are %s (%d)\n", NODE_NAME, rem_node_name, ERL_DIST_VSN);
 
   ei_set_compat_rel(ERL_DIST_VSN); /* erlnode version of dist. protocol */
 
