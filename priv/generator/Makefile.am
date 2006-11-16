@@ -56,7 +56,7 @@ BLACKLISTS = $(srcdir)/g_black.txt $(srcdir)/gdk_black.txt \
 
 all: $(GEN_INCLUDES)
 
-$(GEN_INCLUDES): $(BEAMFILES) $(INTERMEDIATES) $(STRUCTS) \
+$(GEN_DOCS) $(GEN_INCLUDES): $(BEAMFILES) $(INTERMEDIATES) $(STRUCTS) \
 		$(srcdir)/g_black.txt $(srcdir)/gdk_black.txt \
 		$(srcdir)/gtk_black.txt
 	$(ERL) -noinput -run generator go "@GTKDOCLINKS@" \
