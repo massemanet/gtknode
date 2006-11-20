@@ -91,10 +91,11 @@ static void make_reply_list(ei_x_buff *xbuf, char *buff, int *index) {
   
   gint arity, i;
   
+  gn_wrap_ans("reply",xbuf);
+
   if ( ! ((arity = gn_get_list(xbuf, buff, index)) > -1) )
     return;
   
-  gn_wrap_ans("reply",xbuf);
   for (i = 0; i < arity; i++) {
     ei_x_encode_list_header(xbuf, 1);
     if ( ! make_reply(xbuf, buff, index) ) 
