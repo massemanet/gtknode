@@ -6,6 +6,6 @@ erlbeamdir = $(ERLANG_INSTALL_LIB_DIR_gtknode)/ebin
 erlbeam_DATA = gtknode.beam
 CLEANFILES = $(erlbeam_DATA)
 
-.SUFFIXES: .erl .beam
+SUFFIXES = .erl .beam
 .erl.beam:
 	$(ERLC) $(ERLCFLAGS) -b beam $<
