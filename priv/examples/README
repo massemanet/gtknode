@@ -6,12 +6,14 @@ erl -sname foo -pa $GTKNODE/ebin $P
 
  examples;
 
-top    - a simple top-application
-         start with top:start().
+hello_world - hello world
+              start with hello_world:start().
 
-points - draws (really small) points on a drawingarea
-         start points:start().
+points      - draws (really small) points on a drawingarea
+              start with points:start().
 
-sherk  - a full-fledged profiler for erlang apps 
-         inspired by shark (the MacOS X profiler, hence the name)
-         start with sherk:go().
+treeview    - illustrates the use of treeview to display lists and trees
+              start with treeview:start().
+
+top         - a simple top-application
+              start with top:start().
