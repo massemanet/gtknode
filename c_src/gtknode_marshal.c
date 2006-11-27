@@ -58,7 +58,6 @@ GType gn_GType_from_name(const gchar* name) {
     return gtp;
   /* try to instantiate the type */
   tname = get_type_name(name);
-  g_message("tname :%s:\n", tname);
   if ( g_module_symbol(gmod, tname, (gpointer *)&func ) )
     if ( (gtp = (*func)() ) ) 
       return gtp;

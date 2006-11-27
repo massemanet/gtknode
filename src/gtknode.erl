@@ -32,11 +32,20 @@ start(Name) ->
 		started -> Pid;
 		quit -> ok
 	    end;
-	_ -> erlang:fault({already_started,Name})
+	_ -> 
+            {already_started,Name}
     end.
 
-stop(Pid) ->
-    Pid ! quit.
+stop(Pid) when is_pid(Pid) -> 
+    case is_process_alive(Pid) of
+        true -> Pid ! quit;
+        false -> {not_running,Pid}
+    end;
+stop(Name) when is_atom(Name) ->
+    case whereis(Name) of
+	undefined -> {not_running,Name};
+        Pid -> stop(Pid)
+    end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% for debugging, run gtknode:debug and start gtknode from a shell thusly;
@@ -78,13 +87,18 @@ loopDBGH() ->
 	    gtknode_dbg ! {self(),Cmd},loopDBGH()
     end.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 cmd(GUI,C,As) -> cmd(GUI,[{C,As}]).
 
 cmd(GUI,CAs) ->
     GUI ! {self(),CAs},
     receive 
-	{GUI,{reply,Reps}} -> Reps
+	{GUI,{reply,Reps}} -> filter_reps(Reps,CAs)
     end.
+
+filter_reps([{ok,Rep}],[_]) -> Rep;
+filter_reps([{ok,_}|Reps],[_|CAs]) -> filter_reps(Reps,CAs);
+filter_reps([{error,R}|_],[CA|_]) -> exit({gtknode_error,{R,CA}}).
 
 %%%-------------------------------------------------------------------
 %%% implements the gtkNode middleman process
@@ -207,6 +221,7 @@ bored(State,St) ->
     ?LOG([{bored,State}, {state,St}, {msgs,process_info(self(),messages)}]),
     St.
 
+die(quitting) -> ok;
 die(Reason) ->
     process_flag(trap_exit,false),     
     exit({dying,Reason}).

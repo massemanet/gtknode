@@ -58,6 +58,7 @@ AC_CONFIG_FILES([ \
 	priv/examples/points/Makefile \
 	priv/examples/top/Makefile \
 	priv/examples/hello_world/Makefile \
+	priv/examples/hello/Makefile \
 	priv/examples/treeview/Makefile \
 	doc/Makefile \
 	])

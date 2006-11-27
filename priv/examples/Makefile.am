@@ -1,4 +1,4 @@
-SUBDIRS = points top hello_world treeview
+SUBDIRS = points top hello_world treeview hello
 
 EXAMPLESDIR = $(ERLANG_INSTALL_LIB_DIR_gtknode)/examples
 examplesdir = $(EXAMPLESDIR)
