@@ -10,18 +10,26 @@ gboolean gn_glade_init(char *filename) {
   return TRUE;
 }
 
-void erl(GtkWidget *widget){
+void erl(GtkWidget *widget) {
   const char *widgetname;
+  gchar bf[24];
   
   GSignalInvocationHint *ihint = g_signal_get_invocation_hint(widget);
   const gchar *signalname = g_signal_name(ihint->signal_id);
-  if ( ! (widgetname = glade_get_widget_name(widget)) )
-    widgetname = "UNKNOWN";
-  gn_send_signal(widgetname, signalname);
+  
+  g_message("g_quark_from_static_string %i",g_quark_from_static_string("GladeXML::name"));
+  if ( (widgetname = glade_get_widget_name(widget)) ) {
+    g_message("gn_send_signal_1");
+    gn_send_signal(widgetname, signalname);
+  } else {
+    gn_store_obj(bf,G_OBJECT (widget));
+    gn_send_signal(bf, signalname);
+  }
+  g_message("erl");
 }
 
 void gn_erl(GtkWidget *widget){
-  erl(widget);
+    erl(widget);
 }
 void gn_sighandler(GtkWidget *widget){
   erl(widget);

@@ -151,14 +151,21 @@ void gn_put_string(ei_x_buff *xbuf, char *p) {
   }
 }
 
+void gn_store_obj(gchar *bf, GObject *w) {
+  
+  sprintf(bf,"%d", (long)w); 
+  if ( ! hash_lookup(bf) ) {
+    /* ref all objs that are sent to erl to avoid garbing */
+    g_object_ref(w);
+    hash_insert(bf, (void*)w);
+  }
+}
+
 void gn_put_object(ei_x_buff *xbuf, GObject *w) {
   gchar bf[24];
-
+  
   if ( G_IS_OBJECT(w) ){
-    /* ref all objs that are returned to erl to avoid garbing */
-    g_object_ref(w);
-    g_assert( (sprintf(bf,"%d", (long)w) < sizeof(bf)) ); 
-    hash_insert(bf, (void*)w);
+    gn_store_obj(bf,w);
   } else if ( w == 0 ) {
     memcpy(bf,"NULL",5);
   } else {

@@ -19,6 +19,7 @@ static void start_gtk(int argc, char **argv, int ErlFd){
   
   /* initialise libraries */
   gtk_init(&argc, &argv);
+  glade_xml_get_type();
 
   /* watch the erlang distribution file descriptor */
   channel = g_io_channel_unix_new(ErlFd);

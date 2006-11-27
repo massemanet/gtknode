@@ -18,6 +18,7 @@
 -record(st,{gtk_port=[],client_pid=[],handler_pid=[],gtk_pid=[],name=[]}).
 
 -define(BORED, 5000).
+-define(LOG(T), log(process_info(self()),T)).
 
 %%%-------------------------------------------------------------------
 %%% runs in client process
@@ -68,9 +69,9 @@ initDBGH() ->
 loopDBGH() ->
     receive 
 	{gtknode_dbg, {signal, Sig}} ->
-	    io:fwrite("signal - ~p~n", [Sig]),loopDBGH();
+	    ?LOG({signal,Sig}),loopDBGH();
 	{gtknode_dbg, {reply, Rep}} ->
-	    io:fwrite("reply - ~p~n", [Rep]),loopDBGH();
+	    ?LOG({reply,Rep}),loopDBGH();
 	{cmd,quit} ->
 	    gtknode_dbg ! quit;
 	{cmd, Cmd} ->
@@ -104,10 +105,10 @@ init(Client, Name) ->
     process_flag(trap_exit,true), 
     register(Name, self()),
     Client ! started,
-    Port = start_gtkNode(Name),
+    Port = start_gtknode(Name),
     waiting_handshake(#st{handler_pid=Client, name=Name, gtk_port=Port}).
 
-start_gtkNode(Name) ->
+start_gtknode(Name) ->
     open_port({spawn,make_cmd(Name)},[stderr_to_stdout,exit_status]).
 
 make_cmd(Name) ->
@@ -131,7 +132,9 @@ erl_dist_vsn() ->
 	["5","1"|_] -> 7;
 	["5","2"|_] -> 8;
 	["5","3"|_] -> 9;
-	_ -> 10
+	["5","4"|_] ->10;
+	["5","5"|_] ->11;
+	_ -> 12
     end.
 
 string_join([Pref|Toks], Sep) ->
@@ -146,10 +149,10 @@ waiting_handshake(St = #st{gtk_port=Port}) ->
 	    idle(St#st{gtk_pid=GtkPid});
 	{Port,PortData} ->			%from the port
 	    waiting_handshake(handle_portdata(St, PortData));
-	{'EXIT',Port,_Reason} ->		%port died, us too
-	    die(St#st{gtk_port=[]});
+	{'EXIT',Port,Reason} ->                 %port died, us too
+	    die({port_died,Reason});
 	quit -> 
-	    die(St)
+	    die(quitting)
     after 
 	?BORED -> waiting_handshake(bored(waiting_handshake,St))
     end.
@@ -157,55 +160,57 @@ waiting_handshake(St = #st{gtk_port=Port}) ->
 idle(St = #st{gtk_pid=GtkPid, gtk_port=Port, handler_pid=HandPid}) ->
     receive
 	{{GtkPid, signal}, Sig} ->
-	    %%from gtkNode
+	    %%from gtknode
 	    HandPid ! {St#st.name, {signal, Sig}},
 	    idle(St);
 	{Pid,CmdArgs} when pid(Pid) ->
 	    %%from client
 	    GtkPid ! CmdArgs,
-	    waiting(St#st{client_pid = Pid});
+	    waiting(St#st{client_pid = Pid},CmdArgs);
 	{Port,PortData} ->
 	    %%from the port
 	    idle(handle_portdata(St, PortData));
-	{'EXIT',HandPid,_Reason} ->
+	{'EXIT',HandPid,Reason} ->
 	    %%handler died
-	    die(St#st{handler_pid=[]});
-	{'EXIT',Port,_Reason} ->
+	    die({handler_died,Reason});
+	{'EXIT',Port,Reason} ->
 	    %%port died, us too
-	    die(St#st{gtk_port=[]});
+	    die({port_died,Reason});
 	quit -> 
-	    die(St)
+	    die(quitting)
     end.
 
-waiting(St = #st{gtk_pid=GtkPid, gtk_port=Port}) ->
+waiting(St = #st{gtk_pid=GtkPid, gtk_port=Port},CmdArgs) ->
     receive
-	{{GtkPid,reply}, Ans}->			%from gtkNode
+	{{GtkPid,reply}, Ans}->			%from gtknode
 	    St#st.client_pid ! {St#st.name, {reply,Ans}},
 	    idle(St#st{client_pid = []});
 	{Port,{data,PortData}} ->		%from the port
-	    waiting(handle_portdata(St, PortData));
-	{'EXIT',Port,_Reason} ->		%port died, us too
-	    die(St#st{gtk_port=[]});
+	    waiting(handle_portdata(St, PortData),CmdArgs);
+	{'EXIT',Port,Reason} ->                 %port died, us too
+	    die({port_died,{Reason,CmdArgs}});
 	quit -> 
-	    die(St)
+	    die(quitting)
     after 
-	?BORED -> waiting(bored(waiting,St))
+	?BORED -> waiting(bored(waiting,St),CmdArgs)
     end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 handle_portdata(St, PortData) ->
     case PortData of
-	{data, Str} -> io:fwrite("~w - portdata - ~s~n", [?MODULE, Str]);
-	_ -> io:fwrite("~w - portdata - ~p~n", [?MODULE, PortData])
+	{data, Str} -> ?LOG({portdata, Str});
+	_ -> ?LOG({portdata,PortData})
     end,
     St.
 
 bored(State,St) ->
-    io:fwrite("~w - bored - ~p~n~p~n~p~n", 
-	      [?MODULE, State, St, process_info(self(),messages)]),
+    ?LOG([{bored,State}, {state,St}, {msgs,process_info(self(),messages)}]),
     St.
 
-die(_St) ->
-    io:fwrite("~w - terminating~n", [?MODULE]),
+die(Reason) ->
     process_flag(trap_exit,false),     
-    exit(dying).
+    exit({dying,Reason}).
+
+log(ProcInfo,Term) when not is_list(Term) -> log(ProcInfo,[Term]);
+log(ProcInfo,List) ->
+    error_logger:info_report([{in,CF}||{current_function,CF}<-ProcInfo]++List).

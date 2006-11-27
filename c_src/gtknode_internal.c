@@ -242,3 +242,19 @@ gboolean GN_widget_get_attr(int ARI, ei_x_buff *XBUF, char *B, int *I) {
   }
   return TRUE;
 }
+
+gboolean GN_signal_connect(int ARI, ei_x_buff *XBUF, char *B, int *I) {
+  gchar signal[MAXATOMLEN+1];
+  GtkWidget* widget;
+
+  if ( ! gn_check_arity(XBUF, 2, ARI) ) return FALSE;
+  if ( ! gn_get_arg_object(XBUF, B, I, GTK_TYPE_WIDGET, (GObject**)&widget) ) 
+    return FALSE;
+  if ( ! gn_get_arg_gchar_fix(XBUF, B, I, signal) ) return FALSE;
+  
+  g_signal_connect (G_OBJECT (widget), signal, G_CALLBACK (erl), NULL);
+  
+  gn_put_void(XBUF);
+
+  return TRUE;
+}

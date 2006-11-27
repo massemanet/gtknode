@@ -11,8 +11,9 @@ int gn_start_cnode(char **argv);
 gboolean gn_handle_read(GIOChannel *source,GIOCondition cond,gpointer data);
 
 /* called by all signals */
-void gn_sighandler(GtkWidget *widget);/* , gpointer user_data); */
-void gn_erl(GtkWidget *widget);/* , gpointer user_data); */
+void gn_sighandler(GtkWidget *widget);
+void gn_erl(GtkWidget *widget);
+void erl(GtkWidget *widget);
 
 /* inits libglade */
 gboolean gn_glade_init(char *filename);
@@ -63,6 +64,9 @@ gboolean gn_check_object(ei_x_buff *xbuf, gchar* object_name,
 gboolean gn_check_struct(ei_x_buff *xbuf, 
 			 gchar* struct_name, gchar* struct_type, void** pp);
 gboolean gn_check_arity(ei_x_buff *xbuf, int a1, int a2);
+
+void gn_store_obj(gchar *bf, GObject *w);
+
 
 gint gn_get_list(ei_x_buff *xbuf, char *buff, int *index);
 gint gn_get_tuple(ei_x_buff *xbuf, char *buff, int *index);
