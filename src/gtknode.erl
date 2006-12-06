@@ -90,10 +90,13 @@ loopDBGH() ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 cmd(GUI,C,As) -> cmd(GUI,[{C,As}]).
 
+cmd(_GUI,[]) -> 
+    {'EXIT',{foobar,St}} = (catch erlang:error(foobar)), ?LOG({empty,St});
 cmd(GUI,CAs) ->
     GUI ! {self(),CAs},
     receive 
-	{GUI,{reply,Reps}} -> filter_reps(Reps,CAs)
+	{GUI,{reply,Reps}} -> ?LOG([{l_ca,length(CAs)},{l_rep,length(Reps)}]),
+                              filter_reps(Reps,CAs)
     end.
 
 filter_reps([{ok,Rep}],[_]) -> Rep;
@@ -180,7 +183,7 @@ idle(St = #st{gtk_pid=GtkPid, gtk_port=Port, handler_pid=HandPid}) ->
 	{Pid,CmdArgs} when pid(Pid) ->
 	    %%from client
 	    GtkPid ! CmdArgs,
-	    waiting(St#st{client_pid = Pid},CmdArgs);
+	    waiting(St#st{client_pid = Pid},CmdArgs,[]);
 	{Port,PortData} ->
 	    %%from the port
 	    idle(handle_portdata(St, PortData));
@@ -194,19 +197,24 @@ idle(St = #st{gtk_pid=GtkPid, gtk_port=Port, handler_pid=HandPid}) ->
 	    die(quitting)
     end.
 
-waiting(St = #st{gtk_pid=GtkPid, gtk_port=Port},CmdArgs) ->
+waiting(St = #st{gtk_pid=GtkPid, gtk_port=Port},CmdArgs,OldReps) ->
     receive
 	{{GtkPid,reply}, Ans}->			%from gtknode
-	    St#st.client_pid ! {St#st.name, {reply,Ans}},
-	    idle(St#st{client_pid = []});
+            case length(Reps=OldReps++Ans)-length(CmdArgs) of
+                0 ->
+                    St#st.client_pid ! {St#st.name, {reply,Reps}},
+                    idle(St#st{client_pid = []});
+                _ ->
+                    waiting(St,CmdArgs,Reps)
+            end;
 	{Port,{data,PortData}} ->		%from the port
-	    waiting(handle_portdata(St, PortData),CmdArgs);
+	    waiting(handle_portdata(St, PortData),CmdArgs,OldReps);
 	{'EXIT',Port,Reason} ->                 %port died, us too
 	    die({port_died,{Reason,CmdArgs}});
 	quit -> 
 	    die(quitting)
     after 
-	?BORED -> waiting(bored(waiting,St),CmdArgs)
+	?BORED -> waiting(bored(waiting,St),CmdArgs,OldReps)
     end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -87,34 +87,49 @@ static gboolean make_reply(ei_x_buff *xbuf, char *buff, int *index) {
   return FALSE;
 }
 
-static void make_reply_list(ei_x_buff *xbuf, char *buff, int *index) {
-  
+static void make_xbuf(ei_x_buff *xbuf) {
+  ei_x_new_with_version(xbuf);
+  gn_wrap_ans("reply",xbuf);
+}
+
+static void send_xbuf(ei_x_buff *xbuf){
+  gn_send(xbuf);
+  ei_x_free(xbuf);
+}
+
+static void send_replies(char *buff, int *index) {
+  ei_x_buff xbuf;
   gint arity, i;
   
-  gn_wrap_ans("reply",xbuf);
-
-  if ( ! ((arity = gn_get_list(xbuf, buff, index)) > -1) )
+  make_xbuf(&xbuf);
+  
+  if ( ! ((arity = gn_get_list(&xbuf, buff, index)) > -1) ) {
+    send_xbuf(&xbuf);
     return;
+  }
   
   for (i = 0; i < arity; i++) {
-    ei_x_encode_list_header(xbuf, 1);
-    if ( ! make_reply(xbuf, buff, index) ) 
+    if ( ((i+1)%1000) == 0 ) {
+      ei_x_encode_empty_list(&xbuf);
+      send_xbuf(&xbuf);
+      make_xbuf(&xbuf);
+    }
+    ei_x_encode_list_header(&xbuf, 1);
+    if ( ! make_reply(&xbuf, buff, index) ) 
       break;
   }
-  ei_x_encode_empty_list(xbuf);
+  
+  ei_x_encode_empty_list(&xbuf);
+  send_xbuf(&xbuf);
 }
 
 
 static void reply(erlang_msg *msg, ei_x_buff *recv_x_buf) {
-  int i = 0;
+  int index = 0;
   int version;
-  ei_x_buff xbuf;
   
-  ei_decode_version(recv_x_buf->buff, &i, &version);
-  ei_x_new_with_version(&xbuf);
-  make_reply_list(&xbuf, recv_x_buf->buff, &i);
-  gn_send(&xbuf);
-  ei_x_free(&xbuf);
+  ei_decode_version(recv_x_buf->buff, &index, &version);
+  send_replies(recv_x_buf->buff, &index);
 }
 
 /* called from gtk main loop when there's data on the cnode socket */
