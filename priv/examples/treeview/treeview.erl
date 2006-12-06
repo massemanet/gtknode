@@ -144,12 +144,4 @@ col_f(Val,{N,Store,O}) ->
       {'Gtk_list_store_set_value',[Store,iter,N,val]}|O]}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 g(C,As) -> g([{C,As}]).
-g(CAs) ->
-    case gtknode:cmd(?MODULE,CAs) of
-        [{ok,Rep}] -> Rep;
-	Reps -> 
-            case [R || {error,R} <- Reps] of
-                [] -> ok;
-                Es -> throw({errors,Es})
-            end
-    end.
+g(CAs) -> gtknode:cmd(?MODULE,CAs).

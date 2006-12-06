@@ -45,12 +45,4 @@ new_text() ->
 quit() -> gtknode:stop(?MODULE).
 
 g(C,As) -> g([{C,As}]).
-g(CAs) ->
-    case gtknode:cmd(?MODULE,CAs) of
-        [{ok,Rep}] -> Rep;
-	Reps -> 
-            case [R || {error,R} <- Reps] of
-                [] -> ok;
-                Es -> throw({errors,Es})
-            end
-    end.
+g(CAs) ->  gtknode:cmd(?MODULE,CAs).

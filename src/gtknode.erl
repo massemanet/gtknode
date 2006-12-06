@@ -95,8 +95,7 @@ cmd(_GUI,[]) ->
 cmd(GUI,CAs) ->
     GUI ! {self(),CAs},
     receive 
-	{GUI,{reply,Reps}} -> ?LOG([{l_ca,length(CAs)},{l_rep,length(Reps)}]),
-                              filter_reps(Reps,CAs)
+	{GUI,{reply,Reps}} -> filter_reps(Reps,CAs)
     end.
 
 filter_reps([{ok,Rep}],[_]) -> Rep;

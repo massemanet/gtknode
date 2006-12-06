@@ -7,11 +7,11 @@
 %%%-------------------------------------------------------------------
 -module(hello).
 
--export([go/0]).
+-export([start/0]).
 
 -define(G(C,A),gtknode:cmd(hello,C,A)).
 
-go() ->
+start() ->
     gtknode:start(hello),
     Win = ?G('Gtk_window_new',['GTK_WINDOW_TOPLEVEL']), 
     But = ?G('Gtk_button_new_with_label',["butt"]), 

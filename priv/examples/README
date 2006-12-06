@@ -6,6 +6,9 @@ erl -sname foo -pa $GTKNODE/ebin $P
 
  examples;
 
+hello       - an extra simple hello
+              start with hello:start().
+
 hello_world - hello world
               start with hello_world:start().
 
