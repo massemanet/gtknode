@@ -2,4 +2,5 @@ gdk/gdkcolor.h
 gdk/gdkgc.h
 gdk/gdkdrawable.h
 gdk/gdkpixmap.h
+gdk/gdkproperty.h
 gdk/gdkwindow.h

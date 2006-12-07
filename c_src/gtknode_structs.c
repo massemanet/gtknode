@@ -1,5 +1,9 @@
 #include "gtknode.h"
 
+void* gn_construct_GdkAtom() {
+  return (void*) g_new0(GdkAtom,1);}
+void* gn_construct_GtkClipboard() {
+  return (void*) gtk_clipboard_get(GDK_SELECTION_PRIMARY);}
 void* gn_construct_GtkTextIter() {
   return (void*) g_new0(GtkTextIter,1);}
 void* gn_construct_GtkTreeIter() {

@@ -1,0 +1,8 @@
+f().
+gtknode:start(fooey).
+Clipboard0 = gtknode:cmd(fooey,'Gdk_atom_intern',["NONE",false]).
+Clipboard1 = gtknode:cmd(fooey,'Gdk_atom_intern',["PRIMARY",false]).
+Clipboard2 = gtknode:cmd(fooey,'Gdk_atom_intern',["CLIPBOARD",false]).
+gtknode:cmd(fooey,'Gtk_clipboard_set_text',[Clipboard0,"zpeti.\n",-1]).
+gtknode:cmd(fooey,'Gtk_clipboard_clear',[Clipboard0]).
+gtknode:stop(fooey).
