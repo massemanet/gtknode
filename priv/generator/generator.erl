@@ -56,7 +56,7 @@ put_links(D,Root) ->
     doc_links(Rt,get_ix(Rt)).
 
 get_ix("http://"++_ = Doc) -> get_ix_http(Doc);
-get_ix("file://"++Doc) -> get_ix_file(Doc);
+get_ix("file:/"++Doc) -> get_ix_file(Doc);
 get_ix("/"++_ = Doc) -> get_ix_file(Doc).
 
 get_ix_file(Doc) ->
