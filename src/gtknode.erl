@@ -13,7 +13,7 @@
 %%-export([recv/0]).
 %%-export([glade/1,widget_get_attr/1,new_gvalue/2]).
 
--import(filename, [join/1,dirname/1]).
+-import(filename, [join/1,dirname/1,basename/1]).
 
 -record(st,{gtk_port=[],client_pid=[],handler_pid=[],gtk_pid=[],name=[]}).
 
@@ -128,18 +128,26 @@ start_gtknode(Name) ->
     open_port({spawn,make_cmd(Name)},[stderr_to_stdout,exit_status]).
 
 make_cmd(Name) ->
-    Path = join([code:priv_dir(?MODULE),bin]),
-    Bin = "gtknode",
-    case os:find_executable(Bin,Path) of
-	false -> erlang:fault({executable_no_found,Bin});
-	Exe -> 
-	    [Node,Host] = string:tokens(atom_to_list(node()),"@"),
-	    RegName = atom_to_list(Name),
-	    Cookie = atom_to_list(erlang:get_cookie()),
-	    NN = atom_to_list(?MODULE)++"_"++atom_to_list(Name),
-	    EDV = integer_to_list(erl_dist_vsn()),
-	    string_join([Exe,Node,Host,RegName,Cookie,NN,EDV]," ")
-    end.
+  [Node,Host] = string:tokens(atom_to_list(node()),"@"),
+  RegName = atom_to_list(Name),
+  Cookie = atom_to_list(erlang:get_cookie()),
+  NN = atom_to_list(?MODULE)++"_"++atom_to_list(Name),
+  EDV = integer_to_list(erl_dist_vsn()),
+  string_join([exe(),Node,Host,RegName,Cookie,NN,EDV]," ").
+
+exe() ->
+  case os:getenv("GTKNODE_BIN") of
+    false ->
+      Path = join([code:priv_dir(?MODULE),bin]),
+      Bin = "gtknode";
+    GTKNODE_BIN ->
+      Path = dirname(GTKNODE_BIN),
+      Bin = basename(GTKNODE_BIN)
+  end,
+  case os:find_executable(Bin,Path) of
+    false -> erlang:fault({executable_not_found,Bin});
+    Exe -> Exe
+  end.
 
 erl_dist_vsn() ->
     case string:tokens(erlang:system_info(version),".") of
