@@ -24,79 +24,79 @@
 %%% runs in client process
 %%%-------------------------------------------------------------------
 start(Name) -> 
-    case whereis(Name) of
-	undefined ->    
-	    Self = self(),
-	    Pid = spawn_link(fun() -> init(Self, Name) end),
-	    receive 
-		started -> Pid;
-		quit -> ok
-	    end;
-	_ -> 
-            {already_started,Name}
-    end.
+  case whereis(Name) of
+    undefined ->    
+      Self = self(),
+      Pid = spawn_link(fun() -> init(Self, Name) end),
+      receive 
+	started -> Pid;
+	quit -> ok
+      end;
+    _ -> 
+      {already_started,Name}
+  end.
 
 stop(Pid) when is_pid(Pid) -> 
-    case is_process_alive(Pid) of
-        true -> Pid ! quit;
-        false -> {not_running,Pid}
-    end;
+  case is_process_alive(Pid) of
+    true -> Pid ! quit;
+    false -> {not_running,Pid}
+  end;
 stop(Name) when is_atom(Name) ->
-    case whereis(Name) of
-	undefined -> {not_running,Name};
-        Pid -> stop(Pid)
-    end.
+  case whereis(Name) of
+    undefined -> {not_running,Name};
+    Pid -> stop(Pid)
+  end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% for debugging, run gtknode:debug and start gtknode from a shell thusly;
 %%% gtknode <erlnodename> <host> gtknode_dbg <cookie> nod <erl_dist_version>
 %%% E.g. bin/gtknode foo mwlx084 gtknode_dbg cki nod 11
 %%% send messages to the gtknode with gtknode:debug/2, thusly;
-%%% gtknode:dbg('GN_glade_init',["gladefile.glade"]).
+%%% gtknode:debug('GN_glade_init',["gladefile.glade"]).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 debug(Cmd,Args) -> debug([{Cmd,Args}]).
 debug(CmdArgs) ->
-    catch debug(),
-    gtknode_dbgH ! {cmd, CmdArgs},
-    ok.
+  catch debug(),
+  gtknode_dbgH ! {cmd, CmdArgs},
+  ok.
 debug() ->
-    case whereis(gtknode_dbg) of
-	undefined -> spawn(fun initDBG/0);
-	_ -> erlang:fault({already_started,gtknode_dbg})
-    end.
+  case whereis(gtknode_dbg) of
+    undefined -> spawn(fun initDBG/0);
+    _ -> erlang:fault({already_started,gtknode_dbg})
+  end.
 
 initDBG() ->
-    process_flag(trap_exit,true), 
-    register(gtknode_dbg, self()),
-    Handler = spawn_link(fun initDBGH/0),
-    waiting_handshake(#st{handler_pid=Handler, name=gtknode_dbg}).    
+  process_flag(trap_exit,true), 
+  register(gtknode_dbg, self()),
+  Handler = spawn_link(fun initDBGH/0),
+  waiting_handshake(#st{handler_pid=Handler, name=gtknode_dbg}).    
 
 initDBGH() ->
-    register(gtknode_dbgH, self()),
-    loopDBGH().
+  register(gtknode_dbgH, self()),
+  loopDBGH().
 
 loopDBGH() ->
-    receive 
-	{gtknode_dbg, {signal, Sig}} ->
-	    ?LOG({signal,Sig}),loopDBGH();
-	{gtknode_dbg, {reply, Rep}} ->
-	    ?LOG({reply,Rep}),loopDBGH();
-	{cmd,quit} ->
-	    gtknode_dbg ! quit;
-	{cmd, Cmd} ->
-	    gtknode_dbg ! {self(),Cmd},loopDBGH()
-    end.
+  receive 
+    {gtknode_dbg, {signal, Sig}} ->
+      ?LOG({signal,Sig}),loopDBGH();
+    {gtknode_dbg, {reply, Rep}} ->
+      ?LOG({reply,Rep}),loopDBGH();
+    {cmd,quit} ->
+      gtknode_dbg ! quit;
+    {cmd, Cmd} ->
+      gtknode_dbg ! {self(),Cmd},loopDBGH()
+  end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 cmd(GUI,C,As) -> cmd(GUI,[{C,As}]).
 
 cmd(_GUI,[]) -> 
-    {'EXIT',{foobar,St}} = (catch erlang:error(foobar)), ?LOG({empty,St});
+  {'EXIT',{foobar,St}} = (catch erlang:error(foobar)), ?LOG({empty,St});
 cmd(GUI,CAs) ->
-    GUI ! {self(),CAs},
-    receive 
-	{GUI,{reply,Reps}} -> filter_reps(Reps,CAs)
-    end.
+  GUI ! {self(),CAs},
+  receive 
+    {GUI,{reply,Reps}} -> filter_reps(Reps,CAs)
+  end.
 
 filter_reps([{ok,Rep}],[_]) -> Rep;
 filter_reps([{ok,_}|Reps],[_|CAs]) -> filter_reps(Reps,CAs);
@@ -118,14 +118,14 @@ filter_reps([{error,R}|_],[CA|_]) -> exit({gtknode_error,{R,CA}}).
 %%%    atom(quit) | EXIT signals
 %%%-------------------------------------------------------------------
 init(Client, Name) ->
-    process_flag(trap_exit,true), 
-    register(Name, self()),
-    Client ! started,
-    Port = start_gtknode(Name),
-    waiting_handshake(#st{handler_pid=Client, name=Name, gtk_port=Port}).
+  process_flag(trap_exit,true), 
+  register(Name, self()),
+  Client ! started,
+  Port = start_gtknode(Name),
+  waiting_handshake(#st{handler_pid=Client, name=Name, gtk_port=Port}).
 
 start_gtknode(Name) ->
-    open_port({spawn,make_cmd(Name)},[stderr_to_stdout,exit_status]).
+  open_port({spawn,make_cmd(Name)},[stderr_to_stdout,exit_status]).
 
 make_cmd(Name) ->
   [Node,Host] = string:tokens(atom_to_list(node()),"@"),
@@ -150,97 +150,97 @@ exe() ->
   end.
 
 erl_dist_vsn() ->
-    case string:tokens(erlang:system_info(version),".") of
-	[[X]|_] when X < $5-> throw({ancient_erl_version,[X]});
-	["5","0"|_] -> 7;
-	["5","1"|_] -> 7;
-	["5","2"|_] -> 8;
-	["5","3"|_] -> 9;
-	["5","4"|_] ->10;
-	["5","5"|_] ->11;
-	_ -> 12
-    end.
+  case string:tokens(erlang:system_info(version),".") of
+    [[X]|_] when X < $5-> throw({ancient_erl_version,[X]});
+    ["5","0"|_] -> 7;
+    ["5","1"|_] -> 7;
+    ["5","2"|_] -> 8;
+    ["5","3"|_] -> 9;
+    ["5","4"|_] ->10;
+    ["5","5"|_] ->11;
+    _ -> 12
+  end.
 
 string_join([Pref|Toks], Sep) ->
-    lists:foldl(fun(Tok,O) -> O++Sep++Tok end, Pref, Toks).
+  lists:foldl(fun(Tok,O) -> O++Sep++Tok end, Pref, Toks).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% the states; waiting_handshake, idle, waiting_reply
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 waiting_handshake(St = #st{gtk_port=Port}) ->
-    receive
-	{{GtkPid,handshake}, []} -> 
-	    link(GtkPid),
-	    idle(St#st{gtk_pid=GtkPid});
-	{Port,PortData} ->			%from the port
-	    waiting_handshake(handle_portdata(St, PortData));
-	{'EXIT',Port,Reason} ->                 %port died, us too
-	    die({port_died,Reason});
-	quit -> 
-	    die(quitting)
-    after 
-	?BORED -> waiting_handshake(bored(waiting_handshake,St))
-    end.
+  receive
+    {{GtkPid,handshake}, []} -> 
+      link(GtkPid),
+      idle(St#st{gtk_pid=GtkPid});
+    {Port,PortData} ->			%from the port
+      waiting_handshake(handle_portdata(St, PortData));
+    {'EXIT',Port,Reason} ->                 %port died, us too
+      die({port_died,Reason});
+    quit -> 
+      die(quitting)
+  after 
+    ?BORED -> waiting_handshake(bored(waiting_handshake,St))
+  end.
 
 idle(St = #st{gtk_pid=GtkPid, gtk_port=Port, handler_pid=HandPid}) ->
-    receive
-	{{GtkPid, signal}, Sig} ->
-	    %%from gtknode
-	    HandPid ! {St#st.name, {signal, Sig}},
-	    idle(St);
-	{Pid,CmdArgs} when pid(Pid) ->
-	    %%from client
-	    GtkPid ! CmdArgs,
-	    waiting(St#st{client_pid = Pid},CmdArgs,[]);
-	{Port,PortData} ->
-	    %%from the port
-	    idle(handle_portdata(St, PortData));
-	{'EXIT',HandPid,Reason} ->
-	    %%handler died
-	    die({handler_died,Reason});
-	{'EXIT',Port,Reason} ->
-	    %%port died, us too
-	    die({port_died,Reason});
-	quit -> 
-	    die(quitting)
-    end.
+  receive
+    {{GtkPid, signal}, Sig} ->
+      %%from gtknode
+      HandPid ! {St#st.name, {signal, Sig}},
+      idle(St);
+    {Pid,CmdArgs} when pid(Pid) ->
+      %%from client
+      GtkPid ! CmdArgs,
+      waiting(St#st{client_pid = Pid},CmdArgs,[]);
+    {Port,PortData} ->
+      %%from the port
+      idle(handle_portdata(St, PortData));
+    {'EXIT',HandPid,Reason} ->
+      %%handler died
+      die({handler_died,Reason});
+    {'EXIT',Port,Reason} ->
+      %%port died, us too
+      die({port_died,Reason});
+    quit -> 
+      die(quitting)
+  end.
 
 waiting(St = #st{gtk_pid=GtkPid, gtk_port=Port},CmdArgs,OldReps) ->
-    receive
-	{{GtkPid,reply}, Ans}->			%from gtknode
-            case length(Reps=OldReps++Ans)-length(CmdArgs) of
-                0 ->
-                    St#st.client_pid ! {St#st.name, {reply,Reps}},
-                    idle(St#st{client_pid = []});
-                _ ->
-                    waiting(St,CmdArgs,Reps)
-            end;
-	{Port,{data,PortData}} ->		%from the port
-	    waiting(handle_portdata(St, PortData),CmdArgs,OldReps);
-	{'EXIT',Port,Reason} ->                 %port died, us too
-	    die({port_died,{Reason,CmdArgs}});
-	quit -> 
-	    die(quitting)
-    after 
-	?BORED -> waiting(bored(waiting,St),CmdArgs,OldReps)
-    end.
+  receive
+    {{GtkPid,reply}, Ans}->			%from gtknode
+      case length(Reps=OldReps++Ans)-length(CmdArgs) of
+	0 ->
+	  St#st.client_pid ! {St#st.name, {reply,Reps}},
+	  idle(St#st{client_pid = []});
+	_ ->
+	  waiting(St,CmdArgs,Reps)
+      end;
+    {Port,{data,PortData}} ->		%from the port
+      waiting(handle_portdata(St, PortData),CmdArgs,OldReps);
+    {'EXIT',Port,Reason} ->                 %port died, us too
+      die({port_died,{Reason,CmdArgs}});
+    quit -> 
+      die(quitting)
+  after 
+    ?BORED -> waiting(bored(waiting,St),CmdArgs,OldReps)
+  end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 handle_portdata(St, PortData) ->
-    case PortData of
-	{data, Str} -> ?LOG({portdata, Str});
-	_ -> ?LOG({portdata,PortData})
-    end,
-    St.
+  case PortData of
+    {data, Str} -> ?LOG({portdata, Str});
+    _ -> ?LOG({portdata,PortData})
+  end,
+  St.
 
 bored(State,St) ->
-    ?LOG([{bored,State}, {state,St}, {msgs,process_info(self(),messages)}]),
-    St.
+  ?LOG([{bored,State}, {state,St}, {msgs,process_info(self(),messages)}]),
+  St.
 
 die(quitting) -> ok;
 die(Reason) ->
-    process_flag(trap_exit,false),     
-    exit({dying,Reason}).
+  process_flag(trap_exit,false),     
+  exit({dying,Reason}).
 
 log(ProcInfo,Term) when not is_list(Term) -> log(ProcInfo,[Term]);
 log(ProcInfo,List) ->
-    error_logger:info_report([{in,CF}||{current_function,CF}<-ProcInfo]++List).
+  error_logger:info_report([{in,CF}||{current_function,CF}<-ProcInfo]++List).

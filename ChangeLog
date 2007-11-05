@@ -1,6 +1,58 @@
 2006-10-09  Mats Cronqvist  <locmacr@mwlx084>
 
 	* priv/generator/generator.erl: generation of doc links fixed
+	
+
+2007-02-13  mats cronqvist <mats.cronqvist@gmail.com>
+	*  added support for a GTKNODE_BIN env to point out the c-node binary
+	
+2007-01-03 mats.cronqvist <mats.cronqvist@gmail.com>
+	*   fixed a bug in doc link generation
+	
+2006-12-07 mats.cronqvist <mats.cronqvist@gmail.com>
+	*  added clipboard handling infrastructure
+
+2006-12-06 mats.cronqvist <mats.cronqvist@gmail.com>
+	*  fixed examples. v0.30
+
+2006-12-06 mats.cronqvist <mats.cronqvist@gmail.com>
+	*  the c-node will chop up reply list in bits of 1,000, to alleviate
+	  timeout problems.
+
+2006-11-27 mats.cronqvist <mats.cronqvist@gmail.com>
+	*  new gtknode:cmd
+	*  added "hello" example
+
+2006-11-27 mats.cronqvist <mats.cronqvist@gmail.com>
+	*  implemented GN_signal_connect! woo hoo.
+
+2006-11-21 mats.cronqvist <mats.cronqvist@gmail.com>
+	*  doc
+
+2006-11-21 mats.cronqvist <mats.cronqvist@gmail.com>
+	*  treeview example finished
+
+2006-11-21 mats.cronqvist <mats.cronqvist@gmail.com>
+	*  spiffy new examples
+
+2006-11-20 mats.cronqvist <mats.cronqvist@gmail.com>
+	*  automake confusion
+
+2006-11-20 mats.cronqvist <mats.cronqvist@gmail.com>
+	*  bad error handling
+
+2006-11-16 mats.cronqvist <mats.cronqvist@gmail.com>
+	*  makefile tweaks
+
+2006-11-02 mats.cronqvist <mats.cronqvist@gmail.com>
+	*  sherk removal
+
+2006-11-02 mats.cronqvist <mats.cronqvist@gmail.com>
+	*  moved sherk to the eper project
+	
+2006-10-09  Mats Cronqvist  <locmacr@mwlx084>
+
+	* priv/generator/generator.erl: generation of doc links fixed
 
 	* priv/examples/sherk/sherk_aquire.erl: better cookie handling
 

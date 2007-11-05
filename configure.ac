@@ -1,4 +1,4 @@
-AC_INIT(GTK+ 2 wrapper library for Erlang, 0.30, 
+AC_INIT(GTK+ 2 wrapper library for Erlang, 0.32, 
              mats.cronqvist@ericsson.com, gtknode)
 dnl Require autoconf version >=2.59c. first one with erlang macros
 AC_PREREQ(2.59c)
