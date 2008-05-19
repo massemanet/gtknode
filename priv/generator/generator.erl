@@ -89,17 +89,18 @@ get_ix_http(Doc) ->
     end.
 
 doc_links(Root,S)-> 
-    RE = "<a href=\"[A-Za-z-]+.html#id[0-9]+\">[a-z_]+ \\(\\)</a>",
+    RE = "href=\"[A-Za-z-]+.html#id[0-9]+\">[a-z_]+ \\(\\)</a>",
     {match,Ms} = regexp:matches(S,RE),
     io:fwrite("got ~p links for ~s~n",[length(Ms),basename(dirname(Root))]),
     foreach(fun({St,Le})-> do_doc_link(Root,string:substr(S,St,Le)) end, Ms).
 
 do_doc_link(URL,S) ->
-    case string:tokens(S,"=>< \"") of
-	["a","href",Href,"g"++Func,"()","/a"] ->
-	    put("G"++Func,"<a href=\""++dirname(URL)++"/"++Href++"\">");
-	_ -> ok
-    end.
+  case string:tokens(S,"=>< ,\"") of
+    ["href",Href,"g"++Func,"()","/a"] ->
+      put("G"++Func,"<a href=\""++dirname(URL)++"/"++Href++"\">");
+    _ -> 
+      ok
+  end.
 
 do_types_loop([]) ->
     ok;

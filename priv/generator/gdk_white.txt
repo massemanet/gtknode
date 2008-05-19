@@ -4,3 +4,6 @@ gdk/gdkdrawable.h
 gdk/gdkpixmap.h
 gdk/gdkproperty.h
 gdk/gdkwindow.h
+gdk/gdkpixbuf.h
+gdk-pixbuf/gdk-pixbuf-core.h
+gdk-pixbuf/gdk-pixbuf-transform.h

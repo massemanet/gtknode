@@ -4,6 +4,12 @@
   (c-name "GdkWindow")
   (gtype-id "GDK_TYPE_WINDOW")
 )
+(define-object Pixbuf
+  (in-module "Gdk")
+  (parent "GObject")
+  (c-name "GdkPixbuf")
+  (gtype-id "GDK_TYPE_PIXBUF")
+)
 (define-object Pixmap
   (in-module "Gdk")
   (parent "GdkDrawable")
