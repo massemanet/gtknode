@@ -62,7 +62,7 @@ debug(CmdArgs) ->
 debug() ->
   case whereis(gtknode_dbg) of
     undefined -> spawn(fun initDBG/0);
-    _ -> erlang:fault({already_started,gtknode_dbg})
+    _ -> erlang:error({already_started,gtknode_dbg})
   end.
 
 initDBG() ->
@@ -145,7 +145,7 @@ exe() ->
       Bin = basename(GTKNODE_BIN)
   end,
   case os:find_executable(Bin,Path) of
-    false -> erlang:fault({executable_not_found,Bin});
+    false -> erlang:error({executable_not_found,Bin});
     Exe -> Exe
   end.
 

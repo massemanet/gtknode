@@ -78,5 +78,5 @@ snd_rec(Cmd, Args) ->
     ?MODULE ! {self(),[{Cmd,Args}]},
     receive
 	{?MODULE,{reply,[{ok,Rep}]}} -> Rep;
-	{?MODULE,{reply,[{error,Rep}]}} -> erlang:fault({Cmd,Args,Rep})
+	{?MODULE,{reply,[{error,Rep}]}} -> erlang:error({Cmd,Args,Rep})
     end.
