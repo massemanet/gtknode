@@ -128,41 +128,34 @@ start_gtknode(Name) ->
   open_port({spawn,make_cmd(Name)},[stderr_to_stdout,exit_status]).
 
 make_cmd(Name) ->
+  ErlDistributionVsn="13",
   [Node,Host] = string:tokens(atom_to_list(node()),"@"),
   RegName = atom_to_list(Name),
   Cookie = atom_to_list(erlang:get_cookie()),
   NN = atom_to_list(?MODULE)++"_"++atom_to_list(Name),
-  EDV = integer_to_list(erl_dist_vsn()),
-  string_join([exe(),Node,Host,RegName,Cookie,NN,EDV]," ").
+  string:join([exe(),Node,Host,RegName,Cookie,NN,ErlDistributionVsn]," ").
 
 exe() ->
-  case os:getenv("GTKNODE_BIN") of
-    false ->
-      Path = join([code:priv_dir(?MODULE),bin]),
-      Bin = "gtknode";
-    GTKNODE_BIN ->
-      Path = dirname(GTKNODE_BIN),
-      Bin = basename(GTKNODE_BIN)
-  end,
-  case os:find_executable(Bin,Path) of
-    false -> erlang:error({executable_not_found,Bin});
+  take_first(fun exe/1,
+             [S || S <- [os:getenv("GTKNODE_BIN")], is_list(S)] ++
+             [join([my_path(),bin,gtknode]),
+              join([my_path(),c_src,gtknode])]).
+
+exe(S) ->
+  case os:find_executable(basename(S),dirname(S)) of
+    false -> exit(nah);
     Exe -> Exe
   end.
 
-erl_dist_vsn() ->
-  case string:tokens(erlang:system_info(version),".") of
-    [[X]|_] when X < $5-> throw({ancient_erl_version,[X]});
-    ["5","0"|_] -> 7;
-    ["5","1"|_] -> 7;
-    ["5","2"|_] -> 8;
-    ["5","3"|_] -> 9;
-    ["5","4"|_] ->10;
-    ["5","5"|_] ->11;
-    _ -> 12
+my_path() ->
+  dirname(dirname(code:which(?MODULE))).
+
+take_first(_,[]) -> exit({take_first,nothing});
+take_first(Fun,[H|T]) ->
+  try Fun(H)
+  catch _:_ -> take_first(Fun,T)
   end.
 
-string_join([Pref|Toks], Sep) ->
-  lists:foldl(fun(Tok,O) -> O++Sep++Tok end, Pref, Toks).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% the states; waiting_handshake, idle, waiting_reply
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

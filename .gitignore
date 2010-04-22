@@ -1,0 +1,12 @@
+*~
+Makefile*
+aclocal.m4
+autom4te.cache
+config*
+*beam
+*.o
+priv/generator/*.txt
+priv/generator/*.html
+priv/generator/*_generated*
+c_src/.deps
+c_src/gtknode
