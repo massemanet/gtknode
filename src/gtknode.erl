@@ -138,7 +138,7 @@ make_cmd(Name) ->
 exe() ->
   take_first(fun exe/1,
              [S || S <- [os:getenv("GTKNODE_BIN")], is_list(S)] ++
-             [join([my_path(),bin,gtknode]),
+             [join([my_path(),priv,bin,gtknode]),
               join([my_path(),c_src,gtknode])]).
 
 exe(S) ->
