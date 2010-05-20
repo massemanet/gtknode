@@ -10,6 +10,7 @@ AM_INIT_AUTOMAKE(1.9.5)
 
 dnl C-related configuration.
 AC_PROG_CC
+AM_PROG_CC_C_O
 AC_STDC_HEADERS
 
 dnl Erlang-related configuration.

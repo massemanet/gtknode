@@ -135,7 +135,9 @@ pkg-config --cflags libglade-2.0
 
  works, i.e. returns a bunch of c-flags, you should be OK.
 
+  otherwise, install libglade (sudo aptitude install libglade2-dev).
+
   STATUS
 
-  early beta. no major interface changes in the works, but (probably)
-lots of bugs.
+  stable since 2008
+
