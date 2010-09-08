@@ -1,4 +1,4 @@
-  Yet Another GUI framework for Erlang - gtkNode
+  Yet Another GUI framework for Erlang - gtknode
 
   DESIGN GOALS
 
@@ -38,7 +38,7 @@ the process implementing the widget in the c-node.
 * the Python binding provides useful tools for code generation
 * seems to be the Future (tm) in the *nix world, and runs on Windows too.
 
-  there's three parts to the gtkNode. a main loop, some support
+  there's three parts to the gtknode. a main loop, some support
 functions for object storage and marshalling, and a whole bunch of
 generated wrapper functions.
   The main loop is a pretty generic c-node that simple-mindedly
@@ -59,14 +59,14 @@ in the Glade file.
   REFERENCE
 
   the c-node is started thus;
-gtkNode node host regname cookie cnode-name
+gtknode node host regname cookie cnode-name
  
-  when started, gtkNode will connect to it's application by sending a
+  when started, gtknode will connect to it's application by sending a
 handshake message to {node@host, regname}.
   the messsage looks like this;
 {{GtkPid,handshake}, []}
 
-  the Erlang application sends messages to the gtkNode using
+  the Erlang application sends messages to the gtknode using
 GtkPid. messages look like this;
 
 list({'Gtk_function', [Args]})
@@ -85,7 +85,7 @@ GtkPid ! [{'Gtk_button_set_label',[b1,"foo"]},{'Gtk_button_get_label',[b1]}].
 
 {{GtkPid,reply}, [{ok,void},{ok,"foo"}]}
 
-  signals are sent from gtkNode if the signal handler for a specified
+  signals are sent from gtknode if the signal handler for a specified
 signal-widget combination is set to gn_sighandler. the signals look
 like this;
 
@@ -99,17 +99,15 @@ like this;
 
   EXAMPLES
 
-  the file src/gtkNode.erl implements a controller/middleman for the
-gtkNode, it's quite instructive. it is recommended to use this instead of working directly against the c-node.
+  the file src/gtknode.erl implements a controller/middleman for the
+gtknode, it's quite instructive. it is recommended to use this instead of working directly against the c-node.
   the file examples/simple/simple.erl implements the Erlang side of a
 GUI for a simple 'top' application. the GUI is specified in
 examples/simple/simple.glade
 
   GETTING IT
 
-jungerl/lib/gtkNode
-
-  see www.trapexit.org or sourceforge.net
+http://github.com/massemanet/gtknode/
 
   BUILDING
 
@@ -120,22 +118,23 @@ have no real wish to try it myself...
 www.gimp.org/~tml/gimp/win32
 www.mingw.org
 
-  i myself run on solaris 8 and linux (debian).
+  i myself have it run on solaris 8 and linux (debian lenny,squeeze
+  and ubuntu 8,9 and 10).
 
-cd jungerl/lib/gtkNode ; make 
+aclocal ; autoconf ; automake ; ./configure ; make
 
   should work, if;
 
 * OTP_ROOT is sane
 * there is a sane GTK environment
 
-  if this;
+  on a dev-based system, installing libglade2-dev should be enough.
+
+  otherwise, if this;
 
 pkg-config --cflags libglade-2.0
 
  works, i.e. returns a bunch of c-flags, you should be OK.
-
-  otherwise, install libglade (sudo aptitude install libglade2-dev).
 
   STATUS
 
