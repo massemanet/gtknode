@@ -25,11 +25,13 @@ AM_PATH_PYTHON
 dnl AM_PATH_GTK(2.6,[], AC_MSG_ERROR(Cannot find GTK))
 
 dnl Information about GTK+2.
-PKG_CHECK_MODULES(GTK, [gmodule-2.0 libglade-2.0 gtk+-2.0])
+PKG_CHECK_MODULES(GTK, [gmodule-2.0 libglade-2.0 gtk+-2.0, gdk-pixbuf-2.0])
 
 dnl Get the directory that contains the GTK+ include files.
 gtk_include_dir=`echo "$GTK_CFLAGS" | sed -n -e 's/^.*-I\([[^ ]]*include\/gtk-2.0\).*$/\1/p'`
 AC_SUBST([GTKINC], [$gtk_include_dir])
+gdk_pixbuf_include_dir=`echo "$GTK_CFLAGS" | sed -n -e 's/^.*-I\([[^ ]]*include\/gdk-pixbuf-2.0\).*$/\1/p'`
+AC_SUBST([GDKPIXBUFINC], [$gdk_pixbuf_include_dir])
 glib_include_dir=`echo "$GTK_CFLAGS" | sed -n -e 's/^.*-I\([[^ ]]*include\/glib-2.0\).*$/\1/p'`
 AC_SUBST([GINC], [$glib_include_dir])
 gtk_version="`$PKG_CONFIG --modversion gtk+-2.0`"

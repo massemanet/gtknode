@@ -43,12 +43,13 @@ CLEANFILES = $(GEN_INCLUDES) $(BEAMFILES) $(INTERMEDIATES) \
 STRUCTS = $(srcdir)/../../c_src/gtknode_structs.c
 G_INCLUDES = $(wildcard $(GINC)/*/*.h)
 GDK_INCLUDES = $(wildcard $(GTKINC)/gdk/*.h)
-GDK_PIXBUF_INCLUDES = $(wildcard $(GTKINC)/gdk-pixbuf/*.h)
+GDK_PIXBUF_INCLUDES = $(wildcard $(GDKPIXBUFINC)/gdk-pixbuf/*.h)
 GTK_INCLUDES = $(wildcard $(GTKINC)/gtk/*.h)
 G_WHITE_INCLUDES = \
 	$(patsubst %, $(GINC)/%, $(shell cat $(srcdir)/g_white.txt))
 GDK_WHITE_INCLUDES = \
-	$(patsubst %, $(GTKINC)/%, $(shell cat $(srcdir)/gdk_white.txt))
+	$(patsubst gdk-pixbuf/%, $(GDKPIXBUFINC)/gdk-pixbuf/%, \
+		$(patsubst gdk/%, $(GTKINC)/gdk/%, $(shell cat $(srcdir)/gdk_white.txt)))
 GTK_WHITE_INCLUDES = \
 	$(patsubst %, $(GTKINC)/%, $(shell cat $(srcdir)/gtk_white.txt))
 BLACKLISTS = $(srcdir)/g_black.txt $(srcdir)/gdk_black.txt \
