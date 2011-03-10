@@ -128,7 +128,10 @@ start_gtknode(Name) ->
   open_port({spawn,make_cmd(Name)},[stderr_to_stdout,exit_status]).
 
 make_cmd(Name) ->
-  ErlDistributionVsn="13",
+  ErlDistributionVsn=
+    try hd(string:tokens(erlang:system_info(otp_release),"RB"))
+    catch _:_ -> 12
+    end,
   [Node,Host] = string:tokens(atom_to_list(node()),"@"),
   RegName = atom_to_list(Name),
   Cookie = atom_to_list(erlang:get_cookie()),
