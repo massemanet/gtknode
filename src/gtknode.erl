@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
 %%% File    : gtk_node.erl
 %%% Author  : Mats Cronqvist <qthmacr@mwux005>
-%%% Description : 
+%%% Description :
 %%%
 %%% Created : 22 Nov 2004 by Mats Cronqvist <qthmacr@mwux005>
 %%%-------------------------------------------------------------------
@@ -23,20 +23,20 @@
 %%%-------------------------------------------------------------------
 %%% runs in client process
 %%%-------------------------------------------------------------------
-start(Name) -> 
+start(Name) ->
   case whereis(Name) of
-    undefined ->    
+    undefined ->
       Self = self(),
       Pid = spawn_link(fun() -> init(Self, Name) end),
-      receive 
-	started -> Pid;
-	quit -> ok
+      receive
+        started -> Pid;
+        quit -> ok
       end;
-    _ -> 
+    _ ->
       {already_started,Name}
   end.
 
-stop(Pid) when is_pid(Pid) -> 
+stop(Pid) when is_pid(Pid) ->
   case is_process_alive(Pid) of
     true -> Pid ! quit;
     false -> {not_running,Pid}
@@ -66,17 +66,17 @@ debug() ->
   end.
 
 initDBG() ->
-  process_flag(trap_exit,true), 
+  process_flag(trap_exit,true),
   register(gtknode_dbg, self()),
   Handler = spawn_link(fun initDBGH/0),
-  waiting_handshake(#st{handler_pid=Handler, name=gtknode_dbg}).    
+  waiting_handshake(#st{handler_pid=Handler, name=gtknode_dbg}).
 
 initDBGH() ->
   register(gtknode_dbgH, self()),
   loopDBGH().
 
 loopDBGH() ->
-  receive 
+  receive
     {gtknode_dbg, {signal, Sig}} ->
       ?LOG({signal,Sig}),loopDBGH();
     {gtknode_dbg, {reply, Rep}} ->
@@ -90,11 +90,11 @@ loopDBGH() ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 cmd(GUI,C,As) -> cmd(GUI,[{C,As}]).
 
-cmd(_GUI,[]) -> 
+cmd(_GUI,[]) ->
   {'EXIT',{foobar,St}} = (catch erlang:error(foobar)), ?LOG({empty,St});
 cmd(GUI,CAs) ->
   GUI ! {self(),CAs},
-  receive 
+  receive
     {GUI,{reply,Reps}} -> filter_reps(Reps,CAs)
   end.
 
@@ -118,7 +118,7 @@ filter_reps([{error,R}|_],[CA|_]) -> exit({gtknode_error,{R,CA}}).
 %%%    atom(quit) | EXIT signals
 %%%-------------------------------------------------------------------
 init(Client, Name) ->
-  process_flag(trap_exit,true), 
+  process_flag(trap_exit,true),
   register(Name, self()),
   Client ! started,
   Port = start_gtknode(Name),
@@ -164,16 +164,16 @@ take_first(Fun,[H|T]) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 waiting_handshake(St = #st{gtk_port=Port}) ->
   receive
-    {{GtkPid,handshake}, []} -> 
+    {{GtkPid,handshake}, []} ->
       link(GtkPid),
       idle(St#st{gtk_pid=GtkPid});
-    {Port,PortData} ->			%from the port
+    {Port,PortData} ->                  %from the port
       waiting_handshake(handle_portdata(St, PortData));
     {'EXIT',Port,Reason} ->                 %port died, us too
       die({port_died,Reason});
-    quit -> 
+    quit ->
       die(quitting)
-  after 
+  after
     ?BORED -> waiting_handshake(bored(waiting_handshake,St))
   end.
 
@@ -183,7 +183,7 @@ idle(St = #st{gtk_pid=GtkPid, gtk_port=Port, handler_pid=HandPid}) ->
       %%from gtknode
       HandPid ! {St#st.name, {signal, Sig}},
       idle(St);
-    {Pid,CmdArgs} when pid(Pid) ->
+    {Pid,CmdArgs} when is_pid(Pid) ->
       %%from client
       GtkPid ! CmdArgs,
       waiting(St#st{client_pid = Pid},CmdArgs,[]);
@@ -196,27 +196,27 @@ idle(St = #st{gtk_pid=GtkPid, gtk_port=Port, handler_pid=HandPid}) ->
     {'EXIT',Port,Reason} ->
       %%port died, us too
       die({port_died,Reason});
-    quit -> 
+    quit ->
       die(quitting)
   end.
 
 waiting(St = #st{gtk_pid=GtkPid, gtk_port=Port},CmdArgs,OldReps) ->
   receive
-    {{GtkPid,reply}, Ans}->			%from gtknode
+    {{GtkPid,reply}, Ans}->                     %from gtknode
       case length(Reps=OldReps++Ans)-length(CmdArgs) of
-	0 ->
-	  St#st.client_pid ! {St#st.name, {reply,Reps}},
-	  idle(St#st{client_pid = []});
-	_ ->
-	  waiting(St,CmdArgs,Reps)
+        0 ->
+          St#st.client_pid ! {St#st.name, {reply,Reps}},
+          idle(St#st{client_pid = []});
+        _ ->
+          waiting(St,CmdArgs,Reps)
       end;
-    {Port,{data,PortData}} ->		%from the port
+    {Port,{data,PortData}} ->           %from the port
       waiting(handle_portdata(St, PortData),CmdArgs,OldReps);
     {'EXIT',Port,Reason} ->                 %port died, us too
       die({port_died,{Reason,CmdArgs}});
-    quit -> 
+    quit ->
       die(quitting)
-  after 
+  after
     ?BORED -> waiting(bored(waiting,St),CmdArgs,OldReps)
   end.
 
@@ -234,7 +234,7 @@ bored(State,St) ->
 
 die(quitting) -> ok;
 die(Reason) ->
-  process_flag(trap_exit,false),     
+  process_flag(trap_exit,false),
   exit({dying,Reason}).
 
 log(ProcInfo,Term) when not is_list(Term) -> log(ProcInfo,[Term]);
