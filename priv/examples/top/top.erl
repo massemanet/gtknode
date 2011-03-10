@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
 %%% File    : top.erl
 %%% Author  : Mats Cronqvist <locmacr@mwlx084>
-%%% Description : 
+%%% Description :
 %%%
 %%% Created :  9 Aug 2005 by Mats Cronqvist <locmacr@mwlx084>
 %%%-------------------------------------------------------------------
@@ -16,14 +16,14 @@
 -record(col,{title,attr,data_col,type}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-start() -> 
+start() ->
     case whereis(?MODULE) of
-	undefined -> spawn(fun init/0);
-	_ -> already_started
+        undefined -> spawn(fun init/0);
+        _ -> already_started
     end.
 
 stop() -> ?MODULE ! quit.
-    
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 init() ->
     %% start the c-node and it's port handler
@@ -47,11 +47,11 @@ state_init(St) ->
 treeview_init(St) ->
     %% the tree view columns
     Cols = [#col{title="Proc",attr="text",data_col=0,type=string},
-	    #col{title="Size",attr="text",data_col=1,type=integer},
-	    #col{title="Msgq",attr="text",data_col=2,type=integer},
-	    #col{title="Reds",attr="text",data_col=3,type=integer}],
+            #col{title="Size",attr="text",data_col=1,type=integer},
+            #col{title="Msgq",attr="text",data_col=2,type=integer},
+            #col{title="Reds",attr="text",data_col=3,type=integer}],
     lists:foreach(fun(C) -> treeview_column(C) end, Cols),
-    
+
     %% create the model (a list_store)
     LS = ssnd([],'Gtk_list_store_newv',[length(Cols),[C#col.type||C<-Cols]]),
 
@@ -59,7 +59,7 @@ treeview_init(St) ->
     ssnd(treeview1,'Gtk_tree_view_set_model',[LS]),
 
     St#st{treeview=#treeview{cols = Cols,
-			     store = LS}}.
+                             store = LS}}.
 
 treeview_column(#col{title=Title,attr=Attr,data_col=Col}) ->
     %% create a tree view column
@@ -75,26 +75,26 @@ treeview_column(#col{title=Title,attr=Attr,data_col=Col}) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 loop(St) ->
     receive
-	%% user deleted top window
-	{?MODULE,{signal,{window1,_}}} 	  -> quit();
-	%% user selected quit menu item
-	{?MODULE,{signal,{quit1,_}}} 	  -> quit();
-	%% user selected  connect menu item
-	{?MODULE,{signal,{connect,_}}} 	  -> loop(conn(St));
-	%% user selected  disconnect menu item
-	{?MODULE,{signal,{disconnect,_}}} -> loop(disc(St));
-	%% user selected about menu item
-	{?MODULE,{signal,{about1,_}}} 	  -> loop(show_about(St));
-	%% user clicked ok in about dialog
-	{?MODULE,{signal,{dialogb,_}}}	  -> loop(hide_about(St));
-	%% user deleted about dialog
-	{?MODULE,{signal,{dialog1,_}}} 	  -> loop(hide_about(St));
-	%% we got data from the top_top process
-	{data,Data}                       -> loop(update(St,Data));
-	%% quit from the erlang shell
-	quit                              -> quit();
-	%% log other signals
-	X                                 -> io:fwrite("got ~p~n",[X]),loop(St)
+        %% user deleted top window
+        {?MODULE,{signal,{window1,_}}}    -> quit();
+        %% user selected quit menu item
+        {?MODULE,{signal,{quit1,_}}}      -> quit();
+        %% user selected  connect menu item
+        {?MODULE,{signal,{connect,_}}}    -> loop(conn(St));
+        %% user selected  disconnect menu item
+        {?MODULE,{signal,{disconnect,_}}} -> loop(disc(St));
+        %% user selected about menu item
+        {?MODULE,{signal,{about1,_}}}     -> loop(show_about(St));
+        %% user clicked ok in about dialog
+        {?MODULE,{signal,{dialogb,_}}}    -> loop(hide_about(St));
+        %% user deleted about dialog
+        {?MODULE,{signal,{dialog1,_}}}    -> loop(hide_about(St));
+        %% we got data from the top_top process
+        {data,Data}                       -> loop(update(St,Data));
+        %% quit from the erlang shell
+        quit                              -> quit();
+        %% log other signals
+        X                                 -> io:fwrite("got ~p~n",[X]),loop(St)
     end.
 
 quit() -> gtknode:stop(?MODULE).
@@ -102,7 +102,7 @@ conn(St) -> do_connect(),state_conn(St).
 disc(St) -> do_disconnect(),state_disc(St).
 hide_about(St) -> ssnd(dialog1,'Gtk_widget_hide',[]),St.
 show_about(St) -> ssnd(dialog1,'Gtk_widget_show',[]),St.
-update(St,Data) -> 
+update(St,Data) ->
     ssnd(treeview1,'Gtk_widget_freeze_child_notify',[]),
     clear(St#st.treeview),
     populate(St#st.treeview,Data),
@@ -121,9 +121,9 @@ state_conn(St) ->
 
 do_connect() -> top_top:assert(self()).
 do_disconnect() -> top_top:stop().
-    
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-clear(#treeview{store=LS}) -> 
+clear(#treeview{store=LS}) ->
     ssnd(LS,'Gtk_list_store_clear',[]).
 
 populate(_TV,[]) -> ok;
@@ -145,6 +145,6 @@ ssnd(Wid,Cmd,Args) -> snd(Cmd,[Wid|Args]).
 snd(Cmd, Args) ->
     ?MODULE ! {self(),[{Cmd,Args}]},
     receive
-	{?MODULE,{reply,[{ok,Rep}]}} -> Rep;
-	{?MODULE,{reply,[{error,Rep}]}} -> erlang:error({Cmd,Args,Rep})
+        {?MODULE,{reply,[{ok,Rep}]}} -> Rep;
+        {?MODULE,{reply,[{error,Rep}]}} -> erlang:error({Cmd,Args,Rep})
     end.

@@ -9,14 +9,14 @@
 -export([start/0,stop/0]).
 -import(filename,[dirname/1,join/1]).
 
-start() -> 
+start() ->
     case whereis(?MODULE) of
-	undefined -> spawn(fun init/0);
-	_ -> already_started
+        undefined -> spawn(fun init/0);
+        _ -> already_started
     end.
 
 stop() -> ?MODULE ! quit.
-    
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 init() ->
     gtknode:start(?MODULE),
@@ -26,11 +26,11 @@ init() ->
 
 loop() ->
     receive
-	{?MODULE,{signal,{button_ok,clicked}}}     -> change_text(),loop();
+        {?MODULE,{signal,{button_ok,clicked}}}     -> change_text(),loop();
         {?MODULE,{signal,{button_quit,'clicked'}}} -> quit();
-	{?MODULE,{signal,{window,'delete-event'}}} -> quit();
-	quit                                       -> quit();
-	X -> io:fwrite("got ~p~n",[X]),loop()
+        {?MODULE,{signal,{window,'delete-event'}}} -> quit();
+        quit                                       -> quit();
+        X -> io:fwrite("got ~p~n",[X]),loop()
     end.
 
 change_text() ->

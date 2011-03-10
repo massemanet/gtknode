@@ -13,7 +13,7 @@
 -import(lists,[flatten/1,foldl/3]).
 -record(ld,{col_list1,col_list2,col_tree1,col_tree2,tree_store,list_store}).
 
-list_data() -> 
+list_data() ->
     [[1,"one"],
      [2,"two"]].
 
@@ -27,14 +27,14 @@ tree_data() ->
      {["two",2],[]}].
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-start() -> 
+start() ->
     case whereis(?MODULE) of
-	undefined -> spawn(fun init/0);
-	_ -> already_started
+        undefined -> spawn(fun init/0);
+        _ -> already_started
     end.
 
 stop() -> ?MODULE ! quit.
-    
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 init() ->
     gtknode:start(?MODULE),
@@ -52,10 +52,10 @@ loop(LD) ->
     receive
         {?MODULE,{signal,{radiobutton_list,toggled}}}-> loop(tree_view(LD));
         {?MODULE,{signal,{button_insert,clicked}}}   -> loop(insert(LD));
-	{?MODULE,{signal,{window,'delete-event'}}}   -> quit();
+        {?MODULE,{signal,{window,'delete-event'}}}   -> quit();
         {?MODULE,{signal,{button_quit,'clicked'}}}   -> quit();
-	quit                                         -> quit();
-	X -> io:fwrite("got ~p~n",[X]),loop(LD)
+        quit                                         -> quit();
+        X -> io:fwrite("got ~p~n",[X]),loop(LD)
     end.
 
 quit() -> gtknode:stop(?MODULE).
@@ -100,11 +100,11 @@ init_tree_view_column(DataCol,Title) ->
 new_tree_store(Cols)->
     g('Gtk_tree_store_newv',[length(Cols),Cols]).
 
-tree_insert(Store,Rows) -> 
+tree_insert(Store,Rows) ->
     g(flatten(tree_insert(Store,[0],Rows))).
 
 tree_insert(_Store,_Path,[]) -> [];
-tree_insert(Store,Path,[{Row,SubTree}|T]) -> 
+tree_insert(Store,Path,[{Row,SubTree}|T]) ->
     [update_iter(Path, Store),
      tree_insert_row(Store,0,Row),
      tree_insert(Store,[0|Path],SubTree),

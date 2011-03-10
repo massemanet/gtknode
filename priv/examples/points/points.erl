@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
 %%% File    : points.erl
 %%% Author  : Mats Cronqvist <locmacr@mwlx084>
-%%% Description : 
+%%% Description :
 %%%
 %%% Created : 30 Aug 2005 by Mats Cronqvist <locmacr@mwlx084>
 %%%-------------------------------------------------------------------
@@ -14,14 +14,14 @@
 -define(SIZE,300).
 -record(ld, {name,win,gc,pixmap}).
 
-start() -> 
+start() ->
     case whereis(?MODULE) of
-	undefined -> spawn(fun init/0);
-	_ -> already_started
+        undefined -> spawn(fun init/0);
+        _ -> already_started
     end.
 
 stop() -> ?MODULE ! quit.
-    
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 init() ->
     gtknode:start(?MODULE),
@@ -31,14 +31,14 @@ init() ->
 
 loop(LD) ->
     receive
-	{?MODULE,{signal,{drawingarea,'expose-event'}}}->loop(redraw(LD));
-	{?MODULE,{signal,{button_red,'clicked'}}}      ->loop(point(LD,red));
-	{?MODULE,{signal,{button_green,'clicked'}}}    ->loop(point(LD,green));
-	{?MODULE,{signal,{button_blue,'clicked'}}}     ->loop(point(LD,blue));
-	{?MODULE,{signal,{button_quit,'clicked'}}}     ->quit();
-	{?MODULE,{signal,{window,'delete-event'}}}     ->quit();
-	quit                                           ->quit();
-	X -> io:fwrite("got ~p~n",[X]),loop(LD)
+        {?MODULE,{signal,{drawingarea,'expose-event'}}}->loop(redraw(LD));
+        {?MODULE,{signal,{button_red,'clicked'}}}      ->loop(point(LD,red));
+        {?MODULE,{signal,{button_green,'clicked'}}}    ->loop(point(LD,green));
+        {?MODULE,{signal,{button_blue,'clicked'}}}     ->loop(point(LD,blue));
+        {?MODULE,{signal,{button_quit,'clicked'}}}     ->quit();
+        {?MODULE,{signal,{window,'delete-event'}}}     ->quit();
+        quit                                           ->quit();
+        X -> io:fwrite("got ~p~n",[X]),loop(LD)
     end.
 
 quit() -> gtknode:stop(?MODULE).
@@ -77,6 +77,6 @@ g(Wid,Cmd,Args) -> snd_rec(Cmd,[Wid|Args]).
 snd_rec(Cmd, Args) ->
     ?MODULE ! {self(),[{Cmd,Args}]},
     receive
-	{?MODULE,{reply,[{ok,Rep}]}} -> Rep;
-	{?MODULE,{reply,[{error,Rep}]}} -> erlang:error({Cmd,Args,Rep})
+        {?MODULE,{reply,[{ok,Rep}]}} -> Rep;
+        {?MODULE,{reply,[{error,Rep}]}} -> erlang:error({Cmd,Args,Rep})
     end.

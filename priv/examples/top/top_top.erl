@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
 %%% File    : top_top.erl
 %%% Author  : Mats Cronqvist <locmacr@mwlx084>
-%%% Description : 
+%%% Description :
 %%%
 %%% Created : 11 Aug 2005 by Mats Cronqvist <locmacr@mwlx084>
 %%%-------------------------------------------------------------------
@@ -11,34 +11,34 @@
 -import(lists,[flatten/1,sublist/2,sort/2]).
 
 -record(st, {ref,client,old_data=[],
-	     rows=20,tick=2000,key=reds,tags=[reg,mem,msgq,reds]}).
+             rows=20,tick=2000,key=reds,tags=[reg,mem,msgq,reds]}).
 
 assert(ClientPid) ->
     case whereis(?MODULE) of
-	undefined -> spawn_link(fun init/0) ! {start,ClientPid};
-	Pid -> Pid ! {start,ClientPid}
+        undefined -> spawn_link(fun init/0) ! {start,ClientPid};
+        Pid -> Pid ! {start,ClientPid}
     end.
 
 stop() -> ?MODULE ! stop.
 
-init() -> 
+init() ->
     register(?MODULE,self()),
     loop(#st{ref=timr(#st{})}).
 
 loop(St) ->
     receive
-	{timeout,_Ref,{}} -> loop(send_data(St#st{ref=timr(St)}));
-	{start,Client}-> loop(St#st{client=Client,ref=timr(St)});
-	stop -> loop(St#st{ref=untimr(St)})
+        {timeout,_Ref,{}} -> loop(send_data(St#st{ref=timr(St)}));
+        {start,Client}-> loop(St#st{client=Client,ref=timr(St)});
+        stop -> loop(St#st{ref=untimr(St)})
     end.
 
 untimr(St) ->
     (catch erlang:cancel_timer(St#st.ref)),[].
 
 timr(St) ->
-    case St#st.ref of 
-	Ref when is_reference(Ref) -> timr(St#st{ref=untimr(St)});
-	_ -> erlang:start_timer(St#st.tick,self(),{})
+    case St#st.ref of
+        Ref when is_reference(Ref) -> timr(St#st{ref=untimr(St)});
+        _ -> erlang:start_timer(St#st.tick,self(),{})
     end.
 
 send_data(St = #st{old_data=[]}) ->
@@ -58,10 +58,10 @@ pi(P,reg) -> case sin(P,registered_name) of "[]"->sin(P,initial_call); X->X end.
 
 pin(P,Tag,D) -> case (catch process_info(P,Tag)) of {Tag,V} -> V; _ -> D end.
 sin(P,Tag) -> to_string(pin(P,Tag,"")).
-    
+
 to_string(Term) -> flatten(io_lib:format("~p",[Term])).
 
-sort(Key,Rows,Data,OldData) -> 
+sort(Key,Rows,Data,OldData) ->
     sublist(sort(fun(A,B)->cmp(Key,A,B) end, diff(Key,Data,OldData)),Rows).
 
 cmp(reds,[_,A,_,X],[_,B,_,X]) -> B<A;
