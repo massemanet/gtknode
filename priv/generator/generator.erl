@@ -77,9 +77,9 @@ get_ix_http(Doc) ->
                 [Px] -> ok
             end,
             [H,P]  = string:tokens(Px,":"),
-            http:set_options([{proxy,{{H,list_to_integer(P)},[]}}])
+            httpc:set_options([{proxy,{{H,list_to_integer(P)},[]}}])
     end,
-    ReqPid = spawn(fun() -> exit(http:request(Doc)) end),
+    ReqPid = spawn(fun() -> exit(httpc:request(Doc)) end),
     ReqMon = erlang:monitor(process,ReqPid),
     receive
         {'DOWN',ReqMon,_,_,{ok,{_,_,S}}} -> S;
