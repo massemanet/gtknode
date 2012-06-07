@@ -404,7 +404,7 @@ structs(StructsFile) ->
 do_structs(Str, Acc) ->
     case re:run(Str,"gn_construct_.*\\(") of
 	nomatch -> Acc;
-	{match,[{St,Le}]} -> [string:substr(Str,St+13,Le-14)|Acc]
+	{match,[{St,Le}]} -> [string:substr(Str,St+14,Le-14)|Acc]
     end.
 ins_struct(S) -> ets:insert(types,#type{what=struct,cname=S,cast=""}).
     
