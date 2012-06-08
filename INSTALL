@@ -1,16 +1,14 @@
 Installation Instructions
 *************************
 
-  to build the latest and possibly greatest, check out from svn
-trunk. the commands below will build and install in 
+  to build the latest and possibly greatest, check out from github.
+the commands below will build and install in
 /tmp/foo/lib/erlang/lib/gtknode-<vsn>.
   documentation will be in doc directory.
 
- svn checkout http://gtknode.googlecode.com/svn/trunk/ gtknode
+ git clone git://github.com/massemanet/gtknode.git
  cd gtknode
- aclocal
- autoconf
- automake
+ aclocal ; autoconf ; automake
  ./configure --prefix=/tmp/foo/
  make
  make install

@@ -59,7 +59,7 @@ in the Glade file.
   REFERENCE
 
   the c-node is started thus;
-gtknode node host regname cookie cnode-name
+gtknode node host regname cookie cnode-name otp-version
  
   when started, gtknode will connect to it's application by sending a
 handshake message to {node@host, regname}.
@@ -118,8 +118,8 @@ have no real wish to try it myself...
 www.gimp.org/~tml/gimp/win32
 www.mingw.org
 
-  i myself have it run on solaris 8 and linux (debian lenny,squeeze
-  and ubuntu 8,9 and 10).
+  i myself have it run on solaris 8, linux (debian lenny,squeeze
+  and ubuntu 8,9,10,11 and 12), and mac osx (10.7).
 
 aclocal ; autoconf ; automake ; ./configure ; make
 
@@ -128,7 +128,7 @@ aclocal ; autoconf ; automake ; ./configure ; make
 * OTP_ROOT is sane
 * there is a sane GTK environment
 
-  on a dev-based system, installing libglade2-dev should be enough.
+  on a deb-based system, installing libglade2-dev should be enough.
 
   otherwise, if this;
 
