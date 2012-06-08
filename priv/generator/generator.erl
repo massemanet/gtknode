@@ -77,9 +77,9 @@ get_ix_http(Doc) ->
                 [Px] -> ok
             end,
             [H,P]  = string:tokens(Px,":"),
-            http:set_options([{proxy,{{H,list_to_integer(P)},[]}}])
+            httpc:set_options([{proxy,{{H,list_to_integer(P)},[]}}])
     end,
-    ReqPid = spawn(fun() -> exit(http:request(Doc)) end),
+    ReqPid = spawn(fun() -> exit(httpc:request(Doc)) end),
     ReqMon = erlang:monitor(process,ReqPid),
     receive
         {'DOWN',ReqMon,_,_,{ok,{_,_,S}}} -> S;
@@ -90,7 +90,7 @@ get_ix_http(Doc) ->
 
 doc_links(Root,S)-> 
     RE = "href=\"[A-Za-z-]+.html#id[0-9]+\">[a-z_]+ \\(\\)</a>",
-    {match,Ms} = regexp:matches(S,RE),
+    {match,Ms} = re:run(S,RE),
     io:fwrite("got ~p links for ~s~n",[length(Ms),basename(dirname(Root))]),
     foreach(fun({St,Le})-> do_doc_link(Root,string:substr(S,St,Le)) end, Ms).
 
@@ -402,9 +402,9 @@ structs(StructsFile) ->
     Structs = bio:string(StructsFile, fun do_structs/2, []),
     foreach(fun ins_struct/1, Structs).
 do_structs(Str, Acc) ->
-    case regexp:match(Str,"gn_construct_.*\\(") of
+    case re:run(Str,"gn_construct_.*\\(") of
 	nomatch -> Acc;
-	{match,St,Le} -> [string:substr(Str,St+13,Le-14)|Acc]
+	{match,[{St,Le}]} -> [string:substr(Str,St+14,Le-14)|Acc]
     end.
 ins_struct(S) -> ets:insert(types,#type{what=struct,cname=S,cast=""}).
     
