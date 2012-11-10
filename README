@@ -118,8 +118,8 @@ have no real wish to try it myself...
 www.gimp.org/~tml/gimp/win32
 www.mingw.org
 
-  i myself have it run on solaris 8, linux (debian lenny,squeeze
-  and ubuntu 8,9,10,11 and 12), and mac osx (10.7).
+  i myself have it run on solaris 8, linux (debian lenny, squeeze and wheezy,
+and ubuntu 8,9,10,11 and 12), and mac osx (10.7).
 
 aclocal ; autoconf ; automake ; ./configure ; make
 
@@ -129,6 +129,16 @@ aclocal ; autoconf ; automake ; ./configure ; make
 * there is a sane GTK environment
 
   on a deb-based system, installing libglade2-dev should be enough.
+
+  on osx, you should (imho) use homebrew. this is probably enough;
+brew install glade fontconfig freetype libpng
+
+  while building, you'll have to override the decrepit osx versions of
+the autotools, and give configure some help to find the pkg-config
+files. something along these lines;
+
+export PATH=`brew --prefix autoconf`/bin:`brew --prefix automake`/bin:$PATH
+export PKG_CONFIG_PATH=/usr/X11/lib/pkgconfig:/usr/local/lib/pkgconfig
 
   otherwise, if this;
 
