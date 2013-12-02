@@ -1,4 +1,4 @@
-#include "ei.h" 
+#include "ei.h"
 #include <gtk/gtk.h>
 #include <gmodule.h>
 #include <glade/glade.h>
@@ -50,19 +50,19 @@ gboolean gn_get_arg_guint(ei_x_buff *xbuf, char *B, int *I, guint *a);
 gboolean gn_get_arg_gfloat(ei_x_buff *xbuf, char *B, int *I, gfloat *a);
 gboolean gn_get_arg_gdouble(ei_x_buff *xbuf, char *B, int *I, gdouble *a);
 gboolean gn_get_arg_enum(ei_x_buff *xbuf, char *B, int *I, gchar* ec, gint *i);
-gboolean gn_get_arg_flags(ei_x_buff *xbuf, char *B, int *I, 
-			  gchar* type_name, gint *flags);
-gboolean gn_get_arg_list(ei_x_buff *xbuf, char *B, int *I, 
-			 char* type, void** go);
-gboolean gn_get_arg_object(ei_x_buff *xbuf, char *B, int *I, 
-			   GType type, GObject** go);
-gboolean gn_get_arg_struct(ei_x_buff *xbuf, char *B, int *I, 
-			   char* type, void** go);
+gboolean gn_get_arg_flags(ei_x_buff *xbuf, char *B, int *I,
+                          gchar* type_name, gint *flags);
+gboolean gn_get_arg_list(ei_x_buff *xbuf, char *B, int *I,
+                         char* type, void** go);
+gboolean gn_get_arg_object(ei_x_buff *xbuf, char *B, int *I,
+                           GType type, GObject** go);
+gboolean gn_get_arg_struct(ei_x_buff *xbuf, char *B, int *I,
+                           char* type, void** go);
 
-gboolean gn_check_object(ei_x_buff *xbuf, gchar* object_name, 
-			 GType type, GObject** object);
-gboolean gn_check_struct(ei_x_buff *xbuf, 
-			 gchar* struct_name, gchar* struct_type, void** pp);
+gboolean gn_check_object(ei_x_buff *xbuf, gchar* object_name,
+                         GType type, GObject** object);
+gboolean gn_check_struct(ei_x_buff *xbuf,
+                         gchar* struct_name, gchar* struct_type, void** pp);
 gboolean gn_check_arity(ei_x_buff *xbuf, int a1, int a2);
 
 void gn_store_obj(gchar *bf, GObject *w);
@@ -72,8 +72,8 @@ gint gn_get_list(ei_x_buff *xbuf, char *buff, int *index);
 gint gn_get_tuple(ei_x_buff *xbuf, char *buff, int *index);
 
 gboolean gn_get_enum_name(const gchar *type_name, gint i, gchar *enum_name);
-gboolean gn_get_enum_val(ei_x_buff *xbuf, 
-			 const gchar *type_name, gchar *enum_name, gint *i);
+gboolean gn_get_enum_val(ei_x_buff *xbuf,
+                         const gchar *type_name, gchar *enum_name, gint *i);
 
 GType gn_GType_from_name(const gchar* name);
 
