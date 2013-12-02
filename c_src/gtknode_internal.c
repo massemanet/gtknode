@@ -3,12 +3,12 @@
 
 gboolean  GN_glade_init(int arity, ei_x_buff *XBUF, char *B, int *I){
   char *xml_filename;
-  
-  if ( ! gn_check_arity(XBUF, 1, arity) ) 
+
+  if ( ! gn_check_arity(XBUF, 1, arity) )
     return FALSE;
-  if ( ! gn_get_arg_gchar(XBUF, B, I, &xml_filename) ) 
+  if ( ! gn_get_arg_gchar(XBUF, B, I, &xml_filename) )
     return FALSE; /* free */
-  
+
   if ( gn_glade_init(xml_filename) ) {
     gn_put_void(XBUF);
     free(xml_filename);
@@ -28,7 +28,7 @@ gboolean GN_value_get(int ARI, ei_x_buff *XBUF, char *B, int *I){
   gchar* v_string;
   long long ll;
   gdouble v_double;
-  
+
   if ( ! gn_check_arity(XBUF, 1, ARI) ) return FALSE;
   if ( ! gn_get_arg_struct(XBUF, B, I, "GValue", (void**)&object) ) return FALSE;
 
@@ -101,7 +101,7 @@ gboolean GN_value_set(int ARI, ei_x_buff *XBUF, char *B, int *I){
 
   if ( G_IS_VALUE(object) ) g_value_unset(object);
 
-  ei_get_type(B,I,&type,&len);	/* can't fail */
+  ei_get_type(B,I,&type,&len);  /* can't fail */
   switch (type) {
   case ERL_ATOM_EXT:
     if ( ! ei_decode_boolean(B, I, (int*)&v_boolean) ){
@@ -161,19 +161,19 @@ gboolean GN_tree_view_get_selected(int ARI, ei_x_buff *XBUF, char *B, int *I){
   GtkTreeSelection *selection;
   GtkTreeModel *model;
   gchar* path;
-  
-  if ( ! gn_check_arity(XBUF, 1, ARI) ) 
+
+  if ( ! gn_check_arity(XBUF, 1, ARI) )
     return FALSE;
-  if ( ! gn_get_arg_object(XBUF, B, I, GTK_TYPE_TREE_VIEW, (GObject**)&tv) ) 
+  if ( ! gn_get_arg_object(XBUF, B, I, GTK_TYPE_TREE_VIEW, (GObject**)&tv) )
     return FALSE;
-  
+
   model = gtk_tree_view_get_model(tv);
   selection = gtk_tree_view_get_selection(tv);
-  
+
   GList* list = gtk_tree_selection_get_selected_rows(selection, &model);
-  
+
   gn_wrap_reply("ok", XBUF);
-  
+
   while ( list ) {
     path = gtk_tree_path_to_string( (GtkTreePath*) list->data);
     g_assert( ! ei_x_encode_list_header(XBUF, 1) );
@@ -184,7 +184,7 @@ gboolean GN_tree_view_get_selected(int ARI, ei_x_buff *XBUF, char *B, int *I){
   g_list_free(list);
   g_assert( ! ei_x_encode_empty_list(XBUF));
   return TRUE;
-}  
+}
 
 gboolean GN_pango_layout_set_text(int ARI, ei_x_buff *XBUF, char *B, int *I){
   char* text;
@@ -193,10 +193,10 @@ gboolean GN_pango_layout_set_text(int ARI, ei_x_buff *XBUF, char *B, int *I){
   PangoFontDescription* descr;
 
   /* no return value */
-  
-  if ( ! gn_check_arity(XBUF, 3, ARI) ) 
+
+  if ( ! gn_check_arity(XBUF, 3, ARI) )
     return FALSE;
-  if ( ! gn_get_arg_struct(XBUF, B, I, "PangoLayout", (void**)&layout) ) 
+  if ( ! gn_get_arg_struct(XBUF, B, I, "PangoLayout", (void**)&layout) )
     return FALSE;
   if ( ! gn_get_arg_gchar(XBUF, B, I, &text) )  /* free */
     return FALSE;
@@ -204,12 +204,12 @@ gboolean GN_pango_layout_set_text(int ARI, ei_x_buff *XBUF, char *B, int *I){
     free(text);
     return FALSE;
   }
-  
+
   descr = pango_font_description_from_string(descr_str);
   pango_layout_set_font_description(layout, descr);
   pango_layout_set_text(layout,text,(int)strlen(text));
   pango_font_description_free(descr);
-  
+
   gn_put_void(XBUF);
   free(text);
   free(descr_str);
@@ -219,12 +219,12 @@ gboolean GN_pango_layout_set_text(int ARI, ei_x_buff *XBUF, char *B, int *I){
 gboolean GN_widget_get_attr(int ARI, ei_x_buff *XBUF, char *B, int *I) {
   gchar attr[MAXATOMLEN+1];
   GtkWidget* widget;
-  
+
   if ( ! gn_check_arity(XBUF, 2, ARI) ) return FALSE;
-  if ( ! gn_get_arg_object(XBUF, B, I, GTK_TYPE_WIDGET, (GObject**)&widget) ) 
+  if ( ! gn_get_arg_object(XBUF, B, I, GTK_TYPE_WIDGET, (GObject**)&widget) )
     return FALSE;
   if ( ! gn_get_arg_gchar_fix(XBUF, B, I, attr) ) return FALSE;
-  
+
   if ( strcmp("window",attr) == 0 ){
     gn_put_object(XBUF,(GObject*) widget->window);
   }else if ( strcmp("x",attr) == 0 ) {
@@ -248,12 +248,12 @@ gboolean GN_signal_connect(int ARI, ei_x_buff *XBUF, char *B, int *I) {
   GtkWidget* widget;
 
   if ( ! gn_check_arity(XBUF, 2, ARI) ) return FALSE;
-  if ( ! gn_get_arg_object(XBUF, B, I, GTK_TYPE_WIDGET, (GObject**)&widget) ) 
+  if ( ! gn_get_arg_object(XBUF, B, I, GTK_TYPE_WIDGET, (GObject**)&widget) )
     return FALSE;
   if ( ! gn_get_arg_gchar_fix(XBUF, B, I, signal) ) return FALSE;
-  
+
   g_signal_connect (G_OBJECT (widget), signal, G_CALLBACK (erl), NULL);
-  
+
   gn_put_void(XBUF);
 
   return TRUE;

@@ -18,9 +18,9 @@ void* gn_construct_GdkPoint() {
   return (void*) g_new0(GdkPoint,1);}
 void* gn_construct_GdkRectangle() {
   return (void*) g_new0(GdkRectangle,1);}
-void* gn_construct_GdkColor() { 
+void* gn_construct_GdkColor() {
   return (void*) g_new0(GdkColor,1);}
-void* gn_construct_PangoLayout() { 
+void* gn_construct_PangoLayout() {
   return (void*) pango_layout_new((PangoContext*) pango_context_new());}
 void* gn_construct_PangoContext() {
   return (void*) pango_context_new();}
