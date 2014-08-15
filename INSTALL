@@ -14,7 +14,7 @@ the commands below will build and install in
  make install
 
 
-  the configure script has one interesting option; 
+  the configure script has one interesting option;
 
 --enable-gtkdoclinks=URL,
    in the generated doc, generate links to the GTK+ docs (default is no);
@@ -22,7 +22,7 @@ the commands below will build and install in
    URL should be set such that URL/gtk/ix01.html exists.
    for www, the http_proxy variable must be set properly (i.e. if
    there is a proxy, it should be set to "proxy.name:port").
- 
+
    E.g.;
     URL=http://developer.gnome.org/doc/API/2.0 (on-line GTK docs)
     URL=file://usr/share/doc/libgtk2.0-doc (where debian puts the GTK docs)

@@ -100,7 +100,8 @@ like this;
   EXAMPLES
 
   the file src/gtknode.erl implements a controller/middleman for the
-gtknode, it's quite instructive. it is recommended to use this instead of working directly against the c-node.
+gtknode, it's quite instructive. it is recommended to use this instead of
+ working directly against the c-node.
   the file examples/simple/simple.erl implements the Erlang side of a
 GUI for a simple 'top' application. the GUI is specified in
 examples/simple/simple.glade
@@ -113,13 +114,13 @@ http://github.com/massemanet/gtknode/
 
   i can't see why the should be any real problems to get this to work
 on Windows (if it can be said that anything works on Windows); alas, i
-have no real wish to try it myself... 
+have no real wish to try it myself...
   look here for more info;
 www.gimp.org/~tml/gimp/win32
 www.mingw.org
 
   i myself have it run on solaris 8, linux (debian lenny, squeeze and wheezy,
-and ubuntu 8,9,10,11 and 12), and mac osx (10.7).
+and ubuntu 8,9,10,11 and 12), and mac osx (10.7 and 10.9).
 
 aclocal ; autoconf ; automake ; ./configure ; make
 
