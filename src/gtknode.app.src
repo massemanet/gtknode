@@ -1,0 +1,13 @@
+%% -*- mode: erlang; erlang-indent-level: 2 -*-
+{application, gtknode,
+ [
+  {description, "GTK2 binding for erlang"},
+  {vsn, "0.0.0"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { gtknode, []}},
+  {env, []}
+ ]}.
