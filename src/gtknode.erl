@@ -10,11 +10,6 @@
 -export([debug/0,debug/1,debug/2]).
 -export([cmd/2,cmd/3]).
 
-%%-export([recv/0]).
-%%-export([glade/1,widget_get_attr/1,new_gvalue/2]).
-
--import(filename, [join/1,dirname/1,basename/1]).
-
 -record(st,{gtk_port=[],client_pid=[],handler_pid=[],gtk_pid=[],name=[]}).
 
 -define(BORED, 5000).
@@ -141,17 +136,17 @@ make_cmd(Name) ->
 exe() ->
   take_first(fun exe/1,
              [S || S <- [os:getenv("GTKNODE_BIN")], is_list(S)] ++
-             [join([my_path(),priv,bin,gtknode]),
-              join([my_path(),c_src,gtknode])]).
+             [filename:join([my_path(),priv,generator,build,gtknode]),
+              filename:join([my_path(),c_src,gtknode])]).
 
 exe(S) ->
-  case os:find_executable(basename(S),dirname(S)) of
+  case os:find_executable(filename:basename(S),filename:dirname(S)) of
     false -> exit(nah);
     Exe -> Exe
   end.
 
 my_path() ->
-  dirname(dirname(code:which(?MODULE))).
+  filename:dirname(filename:dirname(code:which(?MODULE))).
 
 take_first(_,[]) -> exit({take_first,nothing});
 take_first(Fun,[H|T]) ->
