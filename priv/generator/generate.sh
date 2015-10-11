@@ -9,6 +9,10 @@ function canonic() {
     readlink -e $1
 }
 
+function erl-base() {
+    dirname $(dirname $(readlink -e $(which erl)))/usr
+}
+
 function gennifer() {
     local PREFIX=$1
     shift
@@ -33,10 +37,12 @@ function genfiles() {
         $TMP/${PREFIX}_crap_types.txt
 }
 
+PKG_CONFIG_PATH=/usr/local/Cellar/libxml2/2.9.2/lib/pkgconfig
 GEN_DIR=$(canonic $(dirname $BASH_SOURCE))
 C_SRC_DIR=$(canonic $GEN_DIR/../../c_src)
 TMP=$GEN_DIR/build
 GTK_VERSION=$(pkg-config --modversion gtk+-2.0)
+ERL_ROOT=$(dirname $(dirname $(readlink -e $(which erl))))
 GTKDOCLINKS=no
 
 [ -d $TMP ] && rm -rf $TMP
@@ -58,3 +64,14 @@ erl -noinput -pa $TMP \
     $GTKDOCLINKS $GTK_VERSION $C_SRC_DIR/gtknode_structs.c \
     $(genfiles g) $(genfiles gdk) $(genfiles gtk) \
     -s erlang halt
+
+for f in $(echo $C_SRC_DIR/*.c)
+do
+    gcc $(pkg-config --cflags libglade-2.0) -I $ERL_ROOT/usr/include \
+        -o $(echo $f | sed -e 's/\.c$/.o/g') -c $f
+done
+
+gcc $(pkg-config --libs libglade-2.0) \
+    $(pkg-config --libs gmodule-2.0) \
+    -L$ERL_ROOT/usr/lib -lei \
+    $(echo $C_SRC_DIR/*.o) -o $TMP/gtknode

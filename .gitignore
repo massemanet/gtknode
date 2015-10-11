@@ -11,4 +11,5 @@ priv/generator/*_generated*
 c_src/.deps
 c_src/gtknode
 /.rebar/
+/ebin/
 /priv/generator/build/
