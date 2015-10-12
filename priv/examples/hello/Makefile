@@ -17,4 +17,4 @@ c: $(EXES)
 erl: $(BEAMS)
 
 $(EBIN)/%.beam: %.erl
-	erlc +debug_info $<
+	erlc +debug_info -o $(EBIN) $<

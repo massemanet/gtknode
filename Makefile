@@ -4,7 +4,7 @@ CC    ?= gcc
 ERL   ?= $(shell readlink -e $(shell which erl))
 REBAR ?= $(shell which rebar 2> /dev/null || which ./rebar)
 
-.PHONY: all compile ecompile generate link
+.PHONY: all ecompile generate link examples
 
 SRCS     = $(shell echo c_src/*.c)
 OBJS     = $(patsubst c_src/%.c, c_src/%.o, $(SRCS))
@@ -13,6 +13,9 @@ BEAMS    = $(patsubst src/%.erl, ebin/%.beam, $(ESRCS))
 ERL_ROOT = $(shell dirname $(shell dirname $(ERL)))
 
 all: ebin ecompile generate link
+
+examples:
+	make -C priv/examples
 
 ebin:
 	mkdir $@
@@ -31,8 +34,9 @@ priv/generator/build/gtknode: $(OBJS)
 	$(CC) \
 	$(shell pkg-config --libs libglade-2.0) \
 	$(shell pkg-config --libs gmodule-2.0) \
-	$(OBJS) -o $@ \
-	-L$(ERL_ROOT)/usr/lib -lei
+	$(OBJS) \
+	-L$(ERL_ROOT)/usr/lib -lei \
+	-o $@
 
 c_src/%.o: c_src/%.c
 	$(CC) \
