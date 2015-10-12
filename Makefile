@@ -31,8 +31,8 @@ priv/generator/build/gtknode: $(OBJS)
 	$(CC) \
 	$(shell pkg-config --libs libglade-2.0) \
 	$(shell pkg-config --libs gmodule-2.0) \
-	-L$(ERL_ROOT)/usr/lib -lei \
-	$(OBJS) -o $@
+	$(OBJS) -o $@ \
+	-L$(ERL_ROOT)/usr/lib -lei
 
 c_src/%.o: c_src/%.c
 	$(CC) \
