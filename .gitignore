@@ -1,6 +1,9 @@
 *~
 \#*
 .\#*
+*.beam
+*.out
+*.o
 erl_crash.dump
 /.rebar/
 /c_src/
