@@ -1,8 +1,6 @@
 start an erlang node with paths to the gtknode stuff, e.g. like this;
 
-GTKNODE=/tmp/gtknode/lib/erlang/lib/gtknode-0.15
-P="";for d in  $GTKNODE/examples/[a-z]*; do P=$P" -pa $d"; done
-erl -sname foo -pa $GTKNODE/ebin $P
+erl -sname foo -pa $GTKNODE/ebin
 
  examples;
 
