@@ -36,6 +36,7 @@ function genfiles() {
 PKG_CONFIG_PATH=/usr/local/Cellar/libxml2/2.9.2/lib/pkgconfig
 GEN_DIR=$(canonic $(dirname $BASH_SOURCE))
 C_SRC_DIR=$(canonic $GEN_DIR/../c_src)
+EBIN_DIR=$(canonic $GEN_DIR/../ebin)
 TMP=$GEN_DIR/build
 GTK_VERSION=$(pkg-config --modversion gtk+-2.0)
 GTKDOCLINKS=no
@@ -52,7 +53,7 @@ gennifer g   $G_INCLUDES
 gennifer gdk $GDK_INCLUDES $GDK_PIXBUF_INCLUDES
 gennifer gtk $GTK_INCLUDES
 
-erl -noinput -pa ebin \
+erl -noinput -pa $EBIN_DIR \
     -run generator go \
     $GTKDOCLINKS $GTK_VERSION $C_SRC_DIR/gtknode_structs.c \
     $(genfiles g) $(genfiles gdk) $(genfiles gtk) \
