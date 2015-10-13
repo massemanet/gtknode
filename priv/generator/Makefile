@@ -2,12 +2,16 @@
 
 .PHONY: all
 
-INPUTS   = gdk_black.txt gdk_white.txt g_predefined.defs gtk_predefined.defs \
-           g_white.txt g_black.txt gdk_predefined.defs generate.sh \
-           gtk_black.txt gtk_white.txt h2def.py ../ebin/generator.beam
-OUTPUTS  = gdk_generated.h g_generated.h gtk_generated.h
+INPUTS  = gdk_black.txt gdk_white.txt gdk_predefined.defs \
+            g_black.txt   g_white.txt   g_predefined.defs \
+          gtk_black.txt gtk_white.txt gtk_predefined.defs \
+          generate.sh h2def.py ../../ebin/generator.beam
+OUTPUTS = $(patsubst %, build/%, gdk_generated.h g_generated.h gtk_generated.h)
 
-all: $(patsubst %, build/%, $(OUTPUTS))
+all: build $(OUTPUTS)
+
+build:
+	mkdir build
 
 $(OUTPUTS): $(INPUTS)
-	./generator/generate.sh
+	./generate.sh
