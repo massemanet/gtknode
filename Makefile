@@ -46,9 +46,9 @@ eunit: compile
 xref: compile
 	@$(REBAR) xref skip_deps=true
 
-dialyze: ~/.dialyzer_plt
+dialyze: compile ~/.dialyzer_plt
 	$(shell [ -d .eunit ] && rm -rf .eunit)
-	dialyzer ebin -nn --no_spec --plt $<
+	dialyzer ebin -nn --no_spec --plt ~/.dialyzer_plt
 
 ~/.dialyzer_plt:
 	-dialyzer --output_plt ${@} --build_plt \

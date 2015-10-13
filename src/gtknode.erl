@@ -227,10 +227,11 @@ bored(State,St) ->
   ?LOG([{bored,State}, {state,St}, {msgs,process_info(self(),messages)}]),
   St.
 
+-spec die(term()) -> no_return().
 die(quitting) -> ok;
 die(Reason) ->
   process_flag(trap_exit,false),
-  exit({dying,Reason}).
+  error({dying,Reason}).
 
 log(ProcInfo,Term) when not is_list(Term) -> log(ProcInfo,[Term]);
 log(ProcInfo,List) ->
