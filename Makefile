@@ -40,21 +40,17 @@ release: release_patch
 #############################################################################
 ## testing
 
-eunit: compile-all
+eunit: compile
 	@$(REBAR) eunit skip_deps=true
 
-xref: compile-all
-	@$(REBAR) compile xref skip_deps=true
+xref: compile
+	@$(REBAR) xref skip_deps=true
+
+dialyze: ~/.dialyzer_plt
+	$(shell [ -d .eunit ] && rm -rf .eunit)
+	dialyzer ebin -nn --no_spec --plt $<
 
 ~/.dialyzer_plt:
 	-dialyzer --output_plt ${@} --build_plt \
            --apps erts kernel stdlib crypto ssl public_key inets \
                   eunit xmerl compiler runtime_tools mnesia syntax_tools
-
-deps/.dialyzer_plt: ~/.dialyzer_plt
-	-dialyzer -nn --no_spec \
-          --add_to_plt --plt ~/.dialyzer_plt --output_plt ${@} -r deps
-
-dialyze: deps/.dialyzer_plt
-	$(shell [ -d .eunit ] && rm -rf .eunit)
-	dialyzer ebin -nn --no_spec --plt deps/.dialyzer_plt
