@@ -2,7 +2,7 @@
 
 REBAR ?= $(shell which rebar 2> /dev/null || which ./rebar)
 
-.PHONY: all compile cnode clean test
+.PHONY: all examples compile cnode clean test
 .PHONY: release release_patch release_minor release_major
 .PHONY: eunit xref dialyze
 
