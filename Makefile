@@ -1,45 +1,60 @@
 ## -*- mode: Makefile; fill-column: 80; comment-column: 67; -*-
 
-CC    ?= gcc
-ERL   ?= $(shell readlink -e $(shell which erl))
 REBAR ?= $(shell which rebar 2> /dev/null || which ./rebar)
 
-.PHONY: all ecompile generate link examples
+.PHONY: all compile cnode clean test
+.PHONY: release release_patch release_minor release_major
+.PHONY: eunit xref dialyze
 
-SRCS     = $(shell echo c_src/*.c)
-OBJS     = $(patsubst c_src/%.c, c_src/%.o, $(SRCS))
-ESRCS    = $(shell echo src/*.erl)
-BEAMS    = $(patsubst src/%.erl, ebin/%.beam, $(ESRCS))
-ERL_ROOT = $(shell dirname $(shell dirname $(ERL)))
-
-all: ebin ecompile generate link
+all: compile cnode
 
 examples:
 	make -C priv/examples
 
-ebin:
-	mkdir $@
+cnode:
+	make -C priv
 
-ecompile: $(BEAMS)
+compile:
+	@$(REBAR) compile skip_deps=true
 
-ebin/%.beam: src/%.erl
-	erlc +debug_info +warnings_as_errors -o ebin $<
+clean:
+	@find . -name "*~" -exec rm {} \;
+	@$(REBAR) clean
 
-generate:
-	./priv/generator/generate.sh
+test: eunit xref dialyze
 
-link: priv/generator/build/gtknode
+#############################################################################
+## release stuff
 
-priv/generator/build/gtknode: $(OBJS)
-	$(CC) \
-	$(shell pkg-config --libs libglade-2.0) \
-	$(shell pkg-config --libs gmodule-2.0) \
-	$(OBJS) \
-	-L$(ERL_ROOT)/usr/lib -lei \
-	-o $@
+release_major: test
+	./bin/release.sh major
 
-c_src/%.o: c_src/%.c
-	$(CC) \
-	$(shell pkg-config --cflags libglade-2.0) \
-	-I $(ERL_ROOT)/usr/include \
-	-o $@ -c $<
+release_minor: test
+	./bin/release.sh minor
+
+release_patch: test
+	./bin/release.sh patch
+
+release: release_patch
+
+#############################################################################
+## testing
+
+eunit: compile-all
+	@$(REBAR) eunit skip_deps=true
+
+xref: compile-all
+	@$(REBAR) compile xref skip_deps=true
+
+~/.dialyzer_plt:
+	-dialyzer --output_plt ${@} --build_plt \
+           --apps erts kernel stdlib crypto ssl public_key inets \
+                  eunit xmerl compiler runtime_tools mnesia syntax_tools
+
+deps/.dialyzer_plt: ~/.dialyzer_plt
+	-dialyzer -nn --no_spec \
+          --add_to_plt --plt ~/.dialyzer_plt --output_plt ${@} -r deps
+
+dialyze: deps/.dialyzer_plt
+	$(shell [ -d .eunit ] && rm -rf .eunit)
+	dialyzer ebin -nn --no_spec --plt deps/.dialyzer_plt
