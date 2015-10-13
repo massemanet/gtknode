@@ -36,7 +36,7 @@ function genfiles() {
 PKG_CONFIG_PATH=/usr/local/Cellar/libxml2/2.9.2/lib/pkgconfig
 GEN_DIR=$(canonic $(dirname $BASH_SOURCE))
 C_SRC_DIR=$(canonic $GEN_DIR/../c_src)
-EBIN_DIR=$(canonic $GEN_DIR/../ebin)
+EBIN_DIR=$(canonic $GEN_DIR/../../ebin)
 TMP=$GEN_DIR/build
 GTK_VERSION=$(pkg-config --modversion gtk+-2.0)
 GTKDOCLINKS=no

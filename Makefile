@@ -6,16 +6,16 @@ REBAR ?= $(shell which rebar 2> /dev/null || which ./rebar)
 .PHONY: release release_patch release_minor release_major
 .PHONY: eunit xref dialyze
 
-all: compile cnode
+all: compile
 
 examples:
 	make -C priv/examples
 
-cnode:
-	make -C priv
-
 compile:
 	@$(REBAR) compile skip_deps=true
+
+cnode:
+	make -C priv
 
 clean:
 	@find . -name "*~" -exec rm {} \;
