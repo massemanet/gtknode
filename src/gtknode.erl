@@ -10,11 +10,6 @@
 -export([debug/0,debug/1,debug/2]).
 -export([cmd/2,cmd/3]).
 
-%%-export([recv/0]).
-%%-export([glade/1,widget_get_attr/1,new_gvalue/2]).
-
--import(filename, [join/1,dirname/1,basename/1]).
-
 -record(st,{gtk_port=[],client_pid=[],handler_pid=[],gtk_pid=[],name=[]}).
 
 -define(BORED, 5000).
@@ -141,17 +136,17 @@ make_cmd(Name) ->
 exe() ->
   take_first(fun exe/1,
              [S || S <- [os:getenv("GTKNODE_BIN")], is_list(S)] ++
-             [join([my_path(),priv,bin,gtknode]),
-              join([my_path(),c_src,gtknode])]).
+             [filename:join([my_path(),priv,generator,build,gtknode]),
+              filename:join([my_path(),c_src,gtknode])]).
 
 exe(S) ->
-  case os:find_executable(basename(S),dirname(S)) of
+  case os:find_executable(filename:basename(S),filename:dirname(S)) of
     false -> exit(nah);
     Exe -> Exe
   end.
 
 my_path() ->
-  dirname(dirname(code:which(?MODULE))).
+  filename:dirname(filename:dirname(code:which(?MODULE))).
 
 take_first(_,[]) -> exit({take_first,nothing});
 take_first(Fun,[H|T]) ->
@@ -170,9 +165,9 @@ waiting_handshake(St = #st{gtk_port=Port}) ->
     {Port,PortData} ->                  %from the port
       waiting_handshake(handle_portdata(St, PortData));
     {'EXIT',Port,Reason} ->                 %port died, us too
-      die({port_died,Reason});
+      ?LOG({port_died,Reason});
     quit ->
-      die(quitting)
+      die()
   after
     ?BORED -> waiting_handshake(bored(waiting_handshake,St))
   end.
@@ -192,12 +187,12 @@ idle(St = #st{gtk_pid=GtkPid, gtk_port=Port, handler_pid=HandPid}) ->
       idle(handle_portdata(St, PortData));
     {'EXIT',HandPid,Reason} ->
       %%handler died
-      die({handler_died,Reason});
+      ?LOG({handler_died,Reason});
     {'EXIT',Port,Reason} ->
       %%port died, us too
-      die({port_died,Reason});
+      ?LOG({port_died,Reason});
     quit ->
-      die(quitting)
+      die()
   end.
 
 waiting(St = #st{gtk_pid=GtkPid, gtk_port=Port},CmdArgs,OldReps) ->
@@ -213,9 +208,9 @@ waiting(St = #st{gtk_pid=GtkPid, gtk_port=Port},CmdArgs,OldReps) ->
     {Port,{data,PortData}} ->           %from the port
       waiting(handle_portdata(St, PortData),CmdArgs,OldReps);
     {'EXIT',Port,Reason} ->                 %port died, us too
-      die({port_died,{Reason,CmdArgs}});
+      ?LOG({port_died,{Reason,CmdArgs}});
     quit ->
-      die(quitting)
+      die()
   after
     ?BORED -> waiting(bored(waiting,St),CmdArgs,OldReps)
   end.
@@ -232,10 +227,9 @@ bored(State,St) ->
   ?LOG([{bored,State}, {state,St}, {msgs,process_info(self(),messages)}]),
   St.
 
-die(quitting) -> ok;
-die(Reason) ->
-  process_flag(trap_exit,false),
-  exit({dying,Reason}).
+-spec die() -> no_return().
+die() ->
+  exit(dying).
 
 log(ProcInfo,Term) when not is_list(Term) -> log(ProcInfo,[Term]);
 log(ProcInfo,List) ->
