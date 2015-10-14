@@ -1,534 +1,899 @@
-2006-10-09  Mats Cronqvist  <locmacr@mwlx084>
+commit e266d470bba81f088050027655814f726a334e33
+Author: mats cronqvist <masse@klarna.com>
+Date:   Wed Oct 14 13:27:10 2015 +0200
 
-	* priv/generator/generator.erl: generation of doc links fixed
-	
+    v1.0.0
 
-2007-02-13  mats cronqvist <mats.cronqvist@gmail.com>
-	*  added support for a GTKNODE_BIN env to point out the c-node binary
-	
-2007-01-03 mats.cronqvist <mats.cronqvist@gmail.com>
-	*   fixed a bug in doc link generation
-	
-2006-12-07 mats.cronqvist <mats.cronqvist@gmail.com>
-	*  added clipboard handling infrastructure
+src/gtknode.app.src
 
-2006-12-06 mats.cronqvist <mats.cronqvist@gmail.com>
-	*  fixed examples. v0.30
+commit 5944ab0d3a58421d87217e256539cfcd8f02140e
+Author: mats cronqvist <masse@klarna.com>
+Date:   Wed Oct 14 13:26:37 2015 +0200
 
-2006-12-06 mats.cronqvist <mats.cronqvist@gmail.com>
-	*  the c-node will chop up reply list in bits of 1,000, to alleviate
-	  timeout problems.
+    add release script
 
-2006-11-27 mats.cronqvist <mats.cronqvist@gmail.com>
-	*  new gtknode:cmd
-	*  added "hello" example
+.gitignore
+bin/release.sh
 
-2006-11-27 mats.cronqvist <mats.cronqvist@gmail.com>
-	*  implemented GN_signal_connect! woo hoo.
+commit 32d496bc4dc1f2dad8a4069efbed783332bbcb51
+Author: mats cronqvist <masse@klarna.com>
+Date:   Wed Oct 14 13:16:35 2015 +0200
 
-2006-11-21 mats.cronqvist <mats.cronqvist@gmail.com>
-	*  doc
+    quiet spurious dialyzer warning
 
-2006-11-21 mats.cronqvist <mats.cronqvist@gmail.com>
-	*  treeview example finished
+src/gtknode.erl
 
-2006-11-21 mats.cronqvist <mats.cronqvist@gmail.com>
-	*  spiffy new examples
+commit 11dac181c06559f71974e710825d6fb603ea9a50
+Author: mats cronqvist <masse@cronqvi.st>
+Date:   Tue Oct 13 20:13:43 2015 +0200
 
-2006-11-20 mats.cronqvist <mats.cronqvist@gmail.com>
-	*  automake confusion
+    fix dialyzer make target
 
-2006-11-20 mats.cronqvist <mats.cronqvist@gmail.com>
-	*  bad error handling
+Makefile
+src/gtknode.erl
 
-2006-11-16 mats.cronqvist <mats.cronqvist@gmail.com>
-	*  makefile tweaks
+commit 79bb10a8b379a4bbcf85dae07646a3de74f45a60
+Author: mats cronqvist <masse@cronqvi.st>
+Date:   Tue Oct 13 19:44:04 2015 +0200
 
-2006-11-02 mats.cronqvist <mats.cronqvist@gmail.com>
-	*  sherk removal
+    fix "make test" fail
 
-2006-11-02 mats.cronqvist <mats.cronqvist@gmail.com>
-	*  moved sherk to the eper project
-	
-2006-10-09  Mats Cronqvist  <locmacr@mwlx084>
+Makefile
 
-	* priv/generator/generator.erl: generation of doc links fixed
+commit 39b55b6f28677d3b3d1f399323a1bcb00177f712
+Author: mats cronqvist <masse@cronqvi.st>
+Date:   Tue Oct 13 19:34:34 2015 +0200
 
-	* priv/examples/sherk/sherk_aquire.erl: better cookie handling
+    fix buggy makefile
 
-	* priv/examples/sherk/sherk.erl: 
-	target monitoring logic improved 
-	better cookie handling
+priv/generator/Makefile
 
-2006-09-29  Mats Cronqvist  <locmacr@mwlx084>
+commit 83c632e49ee083d52ba832d90e95cab4ca6e2be2
+Author: mats cronqvist <masse@klarna.com>
+Date:   Tue Oct 13 16:53:32 2015 +0200
 
-	* sherk*: sherk basically works. tree-view not yet implemented.
+    more makefiling
 
-	* gtknode.erl: exported the cmd/2,3 functions. a function api for
-	message sending to the cnode
+priv/Makefile
+priv/c_src/gtknode_gen.c
+priv/generator/Makefile
 
-2006-09-22  Mats Cronqvist  <locmacr@mwlx084>
+commit f8781a25df8a1abf1186d062b941371f4a1910da
+Author: mats cronqvist <masse@klarna.com>
+Date:   Tue Oct 13 11:14:35 2015 +0200
 
-	* sherk.erl: fixed the call window combobox
-	* sherk_tab.erl: fixed bugs on cache file handling
+    harmonize rebar/makefile
 
-2006-09-21  Mats Cronqvist  <locmacr@mwlx084>
+Makefile
+priv/generator/generate.sh
+rebar.config
 
-	* src/gtknode.erl:   fixed up the gtknode:debug/0,1,2 functions
+commit d9cc9cce71a5b9b75abf5fd5f8a489558659daba
+Author: mats cronqvist <masse@klarna.com>
+Date:   Tue Oct 13 11:05:58 2015 +0200
 
-2006-09-20  Mats Cronqvist  <locmacr@mwlx084>
+    ebin dir has moved
 
-	* c_src/gtknode_glade.c:  gn_erl is an alias for gn_sighandler
-	* priv/examples:  fixed up the examples
-	* configure.ac: took some suggestions from lenglet
-	* sherk: the sherk example mostly works ;>
-	
-2006-09-19  Mats Cronqvist  <locmacr@mwlx084>
+priv/generator/generate.sh
 
-	* c_src/gtknode_glade.c:
-	signals from the c-node now looks like {GUI,{signal,{Widget,Signal}}}
-	* c_src/gtknode_internal.c:
-	implemented GN_tree_view_get_selected (returns a list of path strings)
-	* priv/generator/generator.erl:
-	the generator now generates pretty useful documentation
-	* src/gtknode.erl:
-	implemented gtknode:f/2,3 for interactive use from the shell
+commit ee7b80d2a5daaf05d3b0cea5926996656a258544
+Author: mats cronqvist <masse@klarna.com>
+Date:   Tue Oct 13 11:03:29 2015 +0200
 
-2006-09-04  Mats Cronqvist  <locmacr@mwlx084>
+    remove dead make target
 
-	* priv/examples/top/top.erl: 
-	ported to new GValue/GType implementation
-	
-2006-08-29  Mats Cronqvist  <locmacr@mwlx084>
+priv/Makefile
 
-	* gtknode_marshal.c: 
-	put_string handles NULL pointer. coded as "".
-	Gvalue handling moved to GN_value_{get,set,unset}
-	list(string|integer|float) are decoded to GType*
-		
-2006-01-26  Romain Lenglet  <rlenglet@users.forge.objectweb.org>
+commit c650a0e43269bd998aaff1e8e7204c3c16d506e7
+Author: mats cronqvist <masse@klarna.com>
+Date:   Tue Oct 13 11:02:30 2015 +0200
 
-	* src/get_inc_path priv/generator/src/get_inc_path: reimplemented
-	in bash instead of tcsh, so that all scripts only depend on bash
+    find otp includes with escript
 
-	* src/check_otp: redevelopped using Erlang's code:root_dir/0 and
-	code:lib_dir/1; now works all the time, including when the "erl"
-	command in the PATH is not in the Erlang installation hierarchy (e.g.
-	on Debian, erl is in /usr/bin, whereas the Erlang root is
-	/usr/lib/erlang)
+Makefile
+priv/Makefile
+priv/get_erl_root.es
 
-	* priv/gen/gdk_generated-2.8.10.h priv/gen/g_generated-2.8.10.h
-	priv/gen/gtk_generated-2.8.10.h: added generated files for GTK 2.8.10
+commit d5d6dae41edcfcf474fa49d07d10007026bd43ac
+Author: mats cronqvist <masse@klarna.com>
+Date:   Tue Oct 13 10:07:26 2015 +0200
 
-2006-01-16  Mats Cronqvist  <locmacr@mwlx084>
+    reintroduce rebar
+
+Makefile
+c_src/gtknode.c
+c_src/gtknode.h
+c_src/gtknode_cnode.c
+c_src/gtknode_gen.c
+c_src/gtknode_glade.c
+c_src/gtknode_internal.c
+c_src/gtknode_marshal.c
+c_src/gtknode_structs.c
+priv/Makefile
+priv/c_src/gtknode.c
+priv/c_src/gtknode.h
+priv/c_src/gtknode_cnode.c
+priv/c_src/gtknode_gen.c
+priv/c_src/gtknode_glade.c
+priv/c_src/gtknode_internal.c
+priv/c_src/gtknode_marshal.c
+priv/c_src/gtknode_structs.c
+priv/generator/generate.sh
+rebar
+rebar.config
+
+commit e5c5bcc21b527f044290c1bf17ae640e2cc7f732
+Author: mats cronqvist <masse@klarna.com>
+Date:   Mon Oct 12 15:54:47 2015 +0200
+
+    fix examples
+
+priv/examples/README
+priv/examples/hello_world/hello_world.erl
+priv/examples/points/points.erl
+priv/examples/top/top.erl
+priv/examples/treeview/treeview.erl
+
+commit bf55565a95f37d14534b9f3d3b7034039fbea51b
+Author: mats cronqvist <masse@klarna.com>
+Date:   Mon Oct 12 15:32:39 2015 +0200
+
+    makefiles
+
+Makefile
+priv/examples/Makefile
+priv/examples/hello/Makefile
+priv/examples/hello_world/Makefile
+priv/examples/points/Makefile
+priv/examples/top/Makefile
+priv/examples/treeview/Makefile
+
+commit 7c580a22f3cf8c1f5bf9e5f3d0edc407d0c0174c
+Author: mats cronqvist <masse@klarna.com>
+Date:   Mon Oct 12 14:45:54 2015 +0200
+
+    ignore build artefacts
+
+.gitignore
+
+commit 55aced10476fe2efdb7fc11644cf48be16db1fd2
+Author: mats cronqvist <masse@klarna.com>
+Date:   Mon Oct 12 14:44:58 2015 +0200
+
+    improve makefiles
+
+Makefile
+priv/examples/hello/Makefile
+
+commit 434f7f9d1d88f30a9105709c0cc8d261ed71faef
+Author: mats cronqvist <masse@cronqvi.st>
+Date:   Sun Oct 11 18:12:50 2015 +0200
+
+    change to new file path
+
+src/gtknode.erl
+
+commit 3bbcbe345ff9a4319acc332d6e9cff38194ae6b0
+Author: mats cronqvist <masse@cronqvi.st>
+Date:   Sun Oct 11 17:18:48 2015 +0200
+
+    fix makefile bugs
+
+Makefile
+
+commit 99e46f043f1c36ac03aad7d220ead66d6b5d0a41
+Author: mats cronqvist <masse@cronqvi.st>
+Date:   Sun Oct 11 16:57:16 2015 +0200
+
+    replace rebar with Plain Old Makefile
+
+.gitignore
+Makefile
+priv/generator/bio.erl
+priv/generator/generate.sh
+priv/generator/generator.erl
+rebar
+rebar.config
+src/bio.erl
+src/generator.erl
+
+commit ee93641a64033c727cd2b8315e85ae833dec8063
+Author: mats cronqvist <masse@cronqvi.st>
+Date:   Sun Oct 11 12:12:41 2015 +0200
+
+    build kind of works
+
+.gitignore
+c_src/gtknode_gen.c
+priv/generator/g_white.txt
+priv/generator/generate.sh
+rebar.config
+
+commit 1c5a4f98bca0ec4d6d5bd9cd3e6d8a942ed5e0dc
+Author: mats cronqvist <masse@klarna.com>
+Date:   Thu Oct 8 16:44:54 2015 +0200
+
+    dumping autotools, wip
+
+.gitignore
+Makefile.am
+NEWS
+c_src/Makefile.am
+compile
+configure.ac
+depcomp
+doc/Makefile.am
+install-sh
+missing
+priv/Makefile.am
+priv/examples/Makefile.am
+priv/examples/hello/Makefile.am
+priv/examples/hello_world/Makefile.am
+priv/examples/points/Makefile.am
+priv/examples/top/Makefile.am
+priv/examples/treeview/Makefile.am
+priv/generator/Makefile.am
+priv/generator/generate.sh
+priv/generator/generator.erl
+src/Makefile.am
+
+commit 74b60fb2fd97eeb97c1954f2b960da5ecf34f5e3
+Author: mats cronqvist <masse@klarna.com>
+Date:   Fri Oct 2 15:48:22 2015 +0200
+
+    beginning c-build with rebar
+
+priv/generator/generate.sh
+rebar
+rebar.config
+
+commit a123116ca3bd3a4f2945ea496a807d8b496e2f65
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Tue Jul 14 23:17:38 2015 +0200
+
+    ignore
+
+.gitignore
+
+commit 751e8e8ff2c8463c6abb9d745c6c4a3927db5c87
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Tue Jul 14 23:02:52 2015 +0200
+
+    adding some rebar stuff
+
+rebar.config
+src/gtknode.app.src
+
+commit b6e8c462a8f91e26e018b1e34fd6816127f82e74
+Author: mats cronqvist <masse@klarna.com>
+Date:   Fri Aug 15 12:32:16 2014 +0200
+
+    cosmetic
+
+INSTALL
+README
+
+commit 189469d053c52d7e5f09a5aa1127eb1c381751dc
+Author: mats cronqvist <masse@klarna.com>
+Date:   Mon Dec 2 16:16:39 2013 -0600
+
+    whitespace cleanup
+
+c_src/gtknode.h
+
+commit 9691af924fb457dba60e8027628643bab54ab433
+Author: mats cronqvist <masse@klarna.com>
+Date:   Mon Dec 2 15:55:23 2013 -0600
+
+    whiespace cleanup
+
+c_src/gtknode.c
+c_src/gtknode_cnode.c
+c_src/gtknode_glade.c
+c_src/gtknode_internal.c
+c_src/gtknode_marshal.c
+c_src/gtknode_structs.c
 
-	* src/check (Module): removed the dummy *_generated.h files from CVS
+commit 1d5ad969859e14d6cf21568208844de96a33361b
+Author: mats cronqvist <masse@klarna.com>
+Date:   Sat Nov 10 20:25:40 2012 +0100
 
-	* src/gtkNode_cnode.c (Module): newbie argv-bug :<
+    osx build instructions updated
+
+README
+
+commit 7155aaab6e0d327ab12297ee2819c4ae3e7d4d5b
+Author: mats cronqvist <masse@klarna.com>
+Date:   Fri Jun 8 17:06:56 2012 +0200
+
+    docs.
+
+INSTALL
+README
+
+commit 207589ae2affe08d16ad9c40d7ee8320997481d8
+Author: Peter Lemenkov <lemenkov@gmail.com>
+Date:   Thu Jun 7 22:03:16 2012 +0400
 
-2006-01-06  Mats Cronqvist  <locmacr@mwlx084>
+    Off-by one error after switch to re:run/2
+    regexp:match(...) counts symbols starting from 0 while re:run(...) - from 1.
+    Eshell V5.6.5  (abort with ^G)
+    1> Str = "void* gn_construct_GdkPoint() {".
+    "void* gn_construct_GdkPoint() {"
+    2> {match,St,Le} = regexp:match(Str,"gn_construct_.*\\(").
+    {match,7,22}
+    3> string:substr(Str,St+13,Le-14).
+    "GdkPoint"
+    4>
+    Eshell V5.6.5  (abort with ^G)
+    1> Str = "void* gn_construct_GdkPoint() {".
+    "void* gn_construct_GdkPoint() {"
+    2> {match,[{St,Le}]} = re:run(Str,"gn_construct_.*\\(").
+    {match,[{6,22}]}
+    3> string:substr(Str,St+13,Le-14).
+    "_GdkPoin"
+    4> string:substr(Str,St+14,Le-14).
+    "GdkPoint"
+    5>
+    Signed-off-by: Peter Lemenkov <lemenkov@gmail.com>
 
-	* src/gtkNode_glade.c (Module): since it seems there can be
-	signals witout events, gtkNode can now pass the event type 'NONE'
-	to the erlang side.
+priv/generator/generator.erl
 
-	* src/gtkNode.erl (Module): added a debug server. start
-	gtkNode:debug() on the erlang side, then start the c-node in the
-	debugger. args like this;
-	<erlnode name> <host> gtkNodeDBG <cookie> <cnode name> <erts version>
-	e.g. erl snode gtkNodeDBG snookie gtkNodeCDBG 10
-	
-	* src/gtkNode_glade.c (Module): handle the case where the signal
-	handler gets called but there is no event. have no idea why this
-	can happen...
+commit f609c30ed00750f4df55e563fb39f3b58085dd3f
+Author: Peter Lemenkov <lemenkov@gmail.com>
+Date:   Fri May 18 23:00:24 2012 +0400
 
-	but wait... in glade we coupled the "clicked" signal to
-	gn_sighandler. but "clicked" isn't necessarily connected to a GDK
-	event? e.g. if you click a button many times by holding the space
-	bar down. that's just one GDK_PRESS (or whatever it's called).
-	
-	* src/gtkNode.c (Module): cosmetic
+    Fix for R15B - usage of deprecated http
+    Signed-off-by: Peter Lemenkov <lemenkov@gmail.com>
 
-2005-12-01  Mats Cronqvist  <locmacr@mwlx084>
+priv/generator/generator.erl
 
-	* src/gtkNode.c (Module): 
-	* src/gtkNode.erl (Module): 
-	* src/gtkNode_cnode.c (Module): erlang node passes its
-	distribution version number to cnode. cnode set the correct
-	compatibility mode. should work for erls back to R7.
+commit 37e5834172adeabab3aae4352de594c98556d309
+Author: Oleg Smirnov <oleg.smirnov@gmail.com>
+Date:   Tue Apr 10 19:00:13 2012 +0300
 
-	* src/Makefile (Module): always building against R10
+    Fix OTP R15B compatibility issue (re:run instead of regexp:match).
 
-	* src/check_otp (Message): script used by makefile to ensure
-	correct OTP. we want R10 or later, and assert the we can find erlc
-	and ei.h.
+priv/generator/generator.erl
 
-2005-11-15  Mats Cronqvist  <locmacr@mwlx084>
+commit 19ddfd5b31977e704f7c9d6ee5fcfe5dfdfd9b97
+Author: mats cronqvist <masse@klarna.com>
+Date:   Thu Mar 10 16:22:48 2011 +0100
 
-	* src/Makefile (Module): added -lpthread to the linker flags (crux)
+    whitespace
 
-2005-11-05  Mats Cronqvist  <locmacr@mwlx084>
+priv/examples/hello/hello.erl
+priv/examples/hello_world/hello_world.erl
+priv/examples/points/points.erl
+priv/examples/top/top.erl
+priv/examples/top/top_top.erl
+priv/examples/treeview/treeview.erl
 
-	* README (Module): typo
+commit 8a622cf8a30b3f41ca69aa91e79cd942f7dadc90
+Author: mats cronqvist <masse@klarna.com>
+Date:   Thu Mar 10 11:12:07 2011 +0100
 
-	* examples/simple/Makefile (Module): added +debug_info
+    whitespace
 
-	* src/gtkNode_internal.c (Module): gn_*() must return boolean in
-	order to get error handling to work with bulking
+src/gtknode.erl
 
-2005-09-02  Mats Cronqvist  <locmacr@mwlx084>
+commit 29db6747b1e05b6a7bf9094b393670c27e3911f3
+Author: mats cronqvist <masse@klarna.com>
+Date:   Thu Mar 10 11:11:44 2011 +0100
 
-	* src/check (Module): smarter. compares version of GTK with
-	versions of wrappers, copies the best wrappers to priv/gen/*.h
+    better detection of the erlang version. broken for pre-R11.
 
-2005-08-31  Mats Cronqvist  <locmacr@mwlx084>
+src/gtknode.erl
 
-	* examples/points/Makefile (Module): +debug_info
+commit 2986867a8f4563cbca3177ac6ce739e87dbc17e1
+Author: Anthony Ramine <nox@dev-extend.eu>
+Date:   Mon Feb 14 18:46:52 2011 +0800
 
-	* src/gtkNode.erl (make_cmd/1): changed call error/1 to fault1/
+    Reset gdk_pixbuf_include_dir when gdk-pixbuf headers are not in their own dir
 
-2005-08-30  Mats Cronqvist  <locmacr@mwlx084>
+configure.ac
 
-	* :> Committed
+commit 84e329e8d4f4681d868d483a2c201afa5b977324
+Author: Jesper Louis Andersen <jesper.louis.andersen@gmail.com>
+Date:   Mon Nov 15 01:06:12 2010 +0100
 
-	* src/gtkNode_marshal.c (Module): added get_arg_struct
+    Fix gdk-pixbuf's move outside the gtk tree.
+    gdk-pixbuf has been moved outside gtk. Hence, we must check for the
+    presence of the gdk-pixbuf-2.0 module, and we must patsubst differently
+    in the Makefile.am of the generator to handle gdk-pixbuf-parts
+    correctly.
+    It is known Ubuntu 10.10 is a problem, but it is not known when this
+    change occurred.
 
-	* src/gtkNode_cnode.c (Module): error handling didnt work with
-	bulking. cnode number of args changed.
+configure.ac
+priv/generator/Makefile.am
 
-	* src/gtkNode.erl (Module): error termination fixed. cnode number
-	of args changed.
+commit c32dd5da68ea00a9cd968af2c39bbdaee8f538a7
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Wed Sep 8 19:10:24 2010 +0200
 
-	* src/gtkNode.c (Module): the cnode needed its own node name as
-	argument
+    updated build instructions
 
-	* priv/generator/src/generator.erl (Module): wrappers must return
-	boolean in order to get error handling to work with bulking
+README
 
-2005-08-26  Mats Cronqvist  <locmacr@mwlx084>
+commit 951f6c9d7233ea97fa2d5a8241492e6ef544734e
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Thu May 20 15:47:54 2010 +0200
 
-	* src/gtkNode_structs.c: added struct constructors
-	gn_construct_PangoLayout and gn_construct_PangoContext. we must
-	also be able to return struct handles to erlang (with
-	gn_put_struct)
+    doc, new autoconf option
 
-	* src/gtkNode_internal.c (Module): added GN_widget_get_attr.
-	removed old crap, i.e. everything except GN_glade_init and
-	GN_new_gvalue
+README
+configure.ac
 
-	* src/check (Module): intended to check that the generated gtkNode
-	headers are compatible with the installed gtk (tjena uffe)
+commit c5ab3f3898192fe0c1b7a79b4865ada7b849b4ef
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Mon May 10 17:54:34 2010 +0200
 
-	* src/Makefile (Module): os name in name of binary
+    bad path in driver loader
 
-	* priv/generator/src/generator.erl (Module): in order to get pango
-	to work, we need to be able to return structs to erlang.  also
-	changed the filenames of generated names to include the gtk
-	version number.
+src/gtknode.erl
 
-	* priv/generator/src/bio.erl (Module): unused_vars warnings in R10
+commit d9310e5c635a5c55a2bd09d8ec49d6270a38f094
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Thu Apr 22 16:37:35 2010 +0200
 
-	* priv/generator/src/Makefile (Module): cleaned up deps
+    smarter select executable
 
-	* include/gtkNode.h (Module): pango stuff added
+.gitignore
+src/gtknode.erl
 
-	* examples/Makefile (clean): -rm
+commit 768cba2d892c7a00f55e37ce307e157b52eb45a2
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Wed Jan 13 15:39:34 2010 +0000
 
-	* Makefile (Module): new targets; generate, clean, realclean, tarfile
+      changed erlang:fault to erlang:error. thanks to per andersson for patch.
 
-2005-08-18  Mats Cronqvist  <locmacr@mwlx084>
+priv/examples/points/points.erl
+priv/examples/top/top.erl
+src/gtknode.erl
 
-	* priv/gen/gtk_generated.h (Module): GTK 2.4
+commit b4c14874219d7ba9b7f316cf736794d7ca109041
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Wed Sep 24 14:33:46 2008 +0000
 
-	* priv/gen/gdk_generated.h (Module): GTK 2.4
+      gcc increased the default warning level. my warning level was too low.
 
-	* Makefile (generate): target to re-generate gtk wrappers
+c_src/gtknode_gen.c
 
-2005-08-12  Mats Cronqvist  <mats.cronqvist@ericsson.com>
+commit 03e923cd9177474c726c3a365bc5417ea3f976e3
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Mon May 19 14:14:30 2008 +0000
 
-	* everything: moved into jungerl. not in CVS yet though. code
-	generating stuff is not yet migrated, and broken becuse of changed
-	paths.
+      new gtk.org doc format
+      added pixbuf support
 
-	* src/gtkNode_internal.c (GN_widget_get_attr): should be fixed to
-	return list of tagged tuples. good thing it's still alpha :>
+priv/generator/gdk_predefined.defs
+priv/generator/gdk_white.txt
+priv/generator/generator.erl
 
-	* examples/simple/*: created
+commit 61ab5dd1fae47f3e8cc19bb4ef3b325686cf6155
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Fri May 16 09:19:43 2008 +0000
 
-	* README: created
+     ignore shit
 
-	* src/gtkNode_cnode.c: changed the message formats :> for
-	consistency and to support bulking
+commit e4a4581a82b5a889a24a236de2dd33a3be84ab4e
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Mon Nov 5 16:07:23 2007 +0000
 
-	* allOverThePlace: fixed and rearranged
-	
-2005-01-18  Mats Cronqvist  <mats.cronqvist@ericsson.com>
+      version 0.32
 
-	* src/gtkNodeTest.erl (Repository): cosmetic
+ChangeLog
+configure.ac
+src/gtknode.erl
 
-	* src/gtkNode.erl (Repository): cosmetic
+commit 6b63060093916b9d157f4890f08c8ca15ffec72f
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Tue Feb 13 16:02:02 2007 +0000
 
-2005-01-06  Mats Cronqvist  <qthmacr@mwux005>
+      added support for a GTKNODE_BIN env to point out the c-node binary
 
-	* src/gtkNodeTest.erl (Repository): cosmetic
+src/gtknode.erl
 
-2005-01-05  Mats Cronqvist  <qthmacr@mwux005>
+commit c8b4e822bd9ddf83dd150903625aa5cc02e2fe50
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Wed Jan 3 14:38:30 2007 +0000
 
-	* src/gdk.defs (Repository): drawable stuff
+      fixed a bug in doc link generation
 
-	* inc/gtkNode.h (Repository): added get_arg_int
+INSTALL
+priv/generator/generator.erl
 
-	* src/gtkNode_structs.c (Repository): drawable stuff
+commit 8081211d9b0e898b97ffb68da39fd7c08d050ce9
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Thu Dec 7 17:13:01 2006 +0000
 
-	* src/gtkNode_marshal.c (Repository): added get_arg_int
+      added clipboard handling infrastructure
 
-	* src/gtkNode_internal.c (Repository): drawable stuff. 
-	GN_drawingarea_get_window is necessary
+c_src/gtknode_structs.c
+priv/examples/clipboard.txt
+priv/generator/gdk_black.txt
+priv/generator/gdk_white.txt
 
-	* src/gtkNodeTest.erl (Repository): drawable stuff
+commit 18b396ec4cae20195f45403e4d7e2994224d1e2c
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Wed Dec 6 13:19:41 2006 +0000
 
-	* src/gtkNode.erl (Repository): drawable stuff
+      fixed examples. v0.30
 
-	* src/gdk_white.txt (Repository): drawable stuff
+configure.ac
+priv/examples/README
+priv/examples/hello/hello.erl
+priv/examples/hello_world/hello_world.erl
+priv/examples/treeview/treeview.erl
+src/gtknode.erl
 
-	* src/Makefile (Repository): better dependencies (still sucky though)
+commit a9c14c5684ed1fb0bf7eaf84a4c1daf87bdaaedd
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Wed Dec 6 13:02:17 2006 +0000
 
-2005-01-03  Mats Cronqvist  <mats.cronqvist@ericsson.com>
+      the c-node will chop up reply list in bits of 1,000, to alleviate
+      timeout problems.
 
-	* src/gtkNode_cnode.c (Repository): passing regname of erlang node 
-	process to cnode as command line parameter
+c_src/gtknode_cnode.c
+src/gtknode.erl
 
-	* src/gtkNode.erl (Repository): passing regname of erlang node process
-	to cnode as command line parameter 
+commit 76e05b97ee977610608685914101e111862f53d9
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Mon Nov 27 15:49:55 2006 +0000
 
-	* src/gtkNode.c (Repository): passing regname of erlang node process
-	to cnode as command line parameter 
+      new gtknode:cmd
+      added "hello" example
 
-	* src/Makefile (Repository): linux generalizations
+c_src/gtknode_glade.c
+c_src/gtknode_marshal.c
+configure.ac
+priv/examples/Makefile.am
+priv/examples/hello/Makefile.am
+priv/examples/hello/hello.c
+priv/examples/hello/hello.erl
+src/gtknode.erl
 
-2004-12-10  Mats Cronqvist  <qthmacr@mwux005>
+commit 12b280a69f8a3265be1318b661898010570585e1
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Mon Nov 27 14:00:12 2006 +0000
 
-	* src/gtkNodeTest.erl (Module): branch on selection test... loop is 
-	external call
+      implemented GN_signal_connect! woo hoo.
 
-2004-12-09  Mats Cronqvist  <qthmacr@mwux005>
+c_src/gtknode.c
+c_src/gtknode.h
+c_src/gtknode_glade.c
+c_src/gtknode_internal.c
+c_src/gtknode_marshal.c
+src/gtknode.erl
 
-	* src/gtkNode_structs.c (Module): GtkTreePath
+commit 89bd73a161aa5d5257ad6cdc5bc3fba32107ee01
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Tue Nov 21 15:03:20 2006 +0000
 
-	* src/gtkNodeTest.erl (Module): selections
+      doc
 
-	* src/gtkNode_structs.c (Module): using g_new0 instead of g_new (zero-
-	fills).
+priv/examples/README
 
-	* src/gtkNode_marshal.c (Module): GType stuff. tries to init the type 
-	if getting the GType by name doesn't work. gint64 support. 
-	get_arg_list (only for GType*). better(?) error codes.
+commit 419aedd898e17079a99c5b484fa1636a3f05666d
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Tue Nov 21 14:58:41 2006 +0000
 
-	* src/gtkNode_internal.c (Module): the GN_new_gvalue function.
+      treeview example finished
 
-	* src/gtkNode_glade.c (Module): GType stuff
+priv/examples/treeview/treeview.erl
+priv/examples/treeview/treeview.glade
 
-	* src/gtkNodeTest.erl (Module): the treeview/list stuff
+commit 8d6ef0ee2396f908dac0988ae2d6e7e34bb23514
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Tue Nov 21 11:28:22 2006 +0000
 
-	* src/gtkNode.erl (Module): handshaking at startup. the new_gvalue 
-	function.
+      spiffy new examples
 
-	* src/generate.erl (Module): lists (onlt for GType*).get structs by 
-	grepping in gtkNode_structs.c :<
+configure.ac
+priv/examples/Makefile.am
+priv/examples/hello_world/Makefile.am
+priv/examples/hello_world/hello_world.erl
+priv/examples/hello_world/hello_world.glade
+priv/examples/hello_world/hello_world.gladep
+priv/examples/treeview/Makefile.am
+priv/examples/treeview/treeview.erl
+priv/examples/treeview/treeview.glade
+priv/examples/treeview/treeview.gladep
 
-	* src/Makefile (Module): added boatloads of stuff. still doesn't work 
-	properly after make clean
+commit d3ab8f83720777acfd593e84ed1bc379ed5610b8
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Mon Nov 20 09:26:53 2006 +0000
 
-	* inc/gtkNode.h (Module): added gn_get_arg_gint64 and gn_get_arg_list. 
-	more GType stuff
+      automake confusion
 
-2004-11-25  Mats Cronqvist  <qthmacr@mwux005>
+src/Makefile.am
 
-	* : release gtkNode-0_11
+commit 81b0c52ece33f45d13a2c4debcab3147e9e55a5d
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Mon Nov 20 09:23:35 2006 +0000
 
-	* src/gtkNode_glade.c (Module): gn_sighandler can now deal with a 
-	non-glade widget (i.e. a GObject) sending a signal
+      bad error handling
 
-	* src/gtkNodeTest.erl (Module): works now
+c_src/gtknode_cnode.c
 
-	* src/gtkNode.erl (Module): improved prrocess handling a bit
+commit c92fdce50a4b542cb30b3458da759c5e1db08f34
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Thu Nov 16 07:30:55 2006 +0000
 
-2004-11-24  Mats Cronqvist  <qthmacr@mwux005>
+      makefile tweaks
 
-	*  first working version!! released gtkNode-0_1
+configure.ac
+priv/generator/Makefile.am
+src/Makefile.am
 
-	* src/gtkNode_marshal.c (Module): changed pid handling. wraps all 
-	messages in {OwnPid,...}
+commit af35c6d5f65b025e571864f7e4c5c2e1b1f71a66
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Thu Nov 2 11:23:53 2006 +0000
 
-	* src/gtkNode_internal.c (Module): rewrite
+      sherk removal
 
-	* src/gtkNode_glade.c (Module): fixed error handling
+configure.ac
+priv/examples/Makefile.am
 
-	* src/gtkNode_cnode.c (Module): refactored... objects are no longer 
-	special. removed printf's. changed pid handling, link erl process to 
-	gtkNode. handle exit from erlang by exiting gtkNode
-	
-	* src/gtkNode.erl (Module): working version.
+commit 5d08cbdf7a478c80b587806af392a31198731e87
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Thu Nov 2 11:00:26 2006 +0000
 
-	* src/gtkNode.c (Module): details in pid handling. removed printf's
+      moved sherk to the eper project
 
-	* src/generate.erl (Module): refactored... objects are no longer special
-	removed hardcoded qthmacr stuff
+priv/examples/sherk/Makefile.am
+priv/examples/sherk/sherk.erl
+priv/examples/sherk/sherk.glade
+priv/examples/sherk/sherk.gladep
+priv/examples/sherk/sherk_aquire.erl
+priv/examples/sherk/sherk_ets.erl
+priv/examples/sherk/sherk_list.erl
+priv/examples/sherk/sherk_prof.erl
+priv/examples/sherk/sherk_scan.erl
+priv/examples/sherk/sherk_tab.erl
+priv/examples/sherk/sherk_target.erl
+priv/examples/sherk/sherk_tree.erl
 
-	* inc/gtkNode.h (Module): removed some crap. added a forgotten prototype
+commit 73a85d2ab4816438574f13be30fc9578778bb682
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Thu Nov 2 09:40:27 2006 +0000
 
-2004-11-22  Mats Cronqvist  <qthmacr@mwux005>
+      minor logging issues
 
-	* src/generate.erl (Module): gtk_generated.hrl added
+c_src/gtknode_cnode.c
+priv/generator/Makefile.am
 
-	* src/Makefile (Module): gtk_generated.hrl added
+commit f15cbe481aea033e2f8c9045e1be64ef0b643c33
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Mon Oct 9 13:43:25 2006 +0000
 
-2004-11-19  Mats Cronqvist  <qthmacr@mwux005>
+      better target monitoring
+      also better document generation
 
-	* src/gtkNode_marshal.c (Module): implemented hash table storage of 
-	references to structs and non-named objects. the erlang node sees these
-	as atoms, the hash table maps atoms to pointers.
+ChangeLog
+configure.ac
+priv/examples/sherk/sherk.erl
+priv/examples/sherk/sherk_aquire.erl
+priv/generator/Makefile.am
+priv/generator/generator.erl
 
-	* src/gtkNode_cnode.c (Module): GModule stuff external
+commit 33088b2ec38a22fb44902efbb65f64a497b7fee7
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Fri Sep 29 13:53:45 2006 +0000
 
-	* src/gtkNode.c (Module): global definetions of hash table and GModule
+      sherk basically works. tree-view not yet implemented.
 
-	* src/generate.erl (Module): forgotten some unstar's. some new structs 
-	included. also added code to generate gtk.erl.
+ChangeLog
+priv/examples/sherk/sherk.erl
+priv/examples/sherk/sherk.glade
+priv/examples/sherk/sherk_aquire.erl
+priv/examples/sherk/sherk_scan.erl
+priv/examples/sherk/sherk_target.erl
 
-	* inc/gtkNode.h (Module): cosmetic
+commit 0d7e4b49fc892d1079fb7a421ed0b2c0cdfa4d0f
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Fri Sep 29 13:50:44 2006 +0000
 
-2004-11-16  Mats Cronqvist  <qthmacr@mwux005>
+       gtknode.erl: exported the cmd/2,3 functions. a function api for
+    	message sending to the cnode
 
-	* src/gtkNode_marshal.c (Module): refactored again... 
-	coded a prototype of the struct handling. the real one should use 
-	malloc and a hash table. there's no need to free, since on the erlang 
-	side the structs are id'd with atoms.
-	maybe we should send an extra arg, a label (i.e. atom), to every 
-	function that returns a pointer?
-	
-	* src/gtkNode_internal.c (Module): effects of latest refactoring
+ChangeLog
+configure.ac
+src/gtknode.erl
 
-	* src/gtkNode_cnode.c (Module): separate atom and string decode
+commit 9dedec2c82324d3746cc51e49cdd4d188be3d1b5
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Wed Sep 27 09:01:45 2006 +0000
 
-	* src/generate.erl (Module): unstarred some types
+      typo
 
-	* inc/gtkNode.h (Module): refactored prototypes
+src/gtknode.erl
 
-2004-11-12  Mats Cronqvist  <qthmacr@mwux005>
+commit fb55d70362c7ee1d03eb16b0bdfd20e21faeb83a
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Fri Sep 22 14:21:54 2006 +0000
 
-	* src/gtkNode_marshal.c (Module): refactoring for struct handling
+    fixed the call window combobox
+    fixed bugs on cache file handling
 
-	* src/gtkNode_internal.c (Module): affected by refactoring
+ChangeLog
+priv/examples/sherk/sherk.erl
+priv/examples/sherk/sherk.glade
+priv/examples/sherk/sherk_tab.erl
 
-	* src/gtkNode_glade.c (Module): fixed misplaced functionality
+commit 360cf4a35499589b3f752ed0eb3a33af5fd8d6a1
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Thu Sep 21 14:18:22 2006 +0000
 
-	* src/gtkNode_cnode.c (Module): refactoring for struct handling
+      fixed up the gtknode:debug/0,1,2 functions
 
-	* src/generate.erl (Module): refactoring for struct handling
+ChangeLog
+src/gtknode.erl
 
-	* src/Makefile (Module):  fixed defs dependencies
+commit 1b85c003a818366b586b091f2a990314ae4ab543
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Wed Sep 20 15:20:35 2006 +0000
 
-	* inc/gtkNode.h (Module): refactoring...
+      made sherk work, mostly. can aquire data and generate call and proc data
 
-2004-11-10  Mats Cronqvist  <qthmacr@mwux005>
+configure.ac
+priv/examples/sherk/Makefile.am
+priv/examples/sherk/sherk.erl
+priv/examples/sherk/sherk.glade
+priv/examples/sherk/sherk.glade.bak
+priv/examples/sherk/sherk.gladep.bak
+priv/examples/sherk/sherk_aquire.erl
+priv/examples/sherk/sherk_ets.erl
+priv/examples/sherk/sherk_list.erl
+priv/examples/sherk/sherk_prof.erl
+priv/examples/sherk/sherk_scan.erl
+priv/examples/sherk/sherk_tab.erl
+priv/examples/sherk/sherk_tree.erl
 
-	* src/gtk_black.txt (Module): added many deprecated functions 
-
-	* src/gtkNode_marshal.c (Module): fixed the gn_put_* functions
-
-	* src/gtkNode_internal.c (Module): all ints are longlong 
-
-	* src/generate.erl (Module): casting bugs
-
-2004-11-09  Mats Cronqvist  <qthmacr@mwux005>
-
-	* src/gtkNode_marshal.c (Module): doc. there's a bunch of stuff 
-	missing in this version...
-
-	* src/gtkNode_glade.c (Module): pointer bug
-
-	* src/generate.erl (Module): uses src/*.txt files to generate .defs
-
-	* src/Makefile (Module): .defs handling. we generate ../defs/*.defs
-
-2004-11-05  Mats Cronqvist  <qthmacr@mwux005>
-
-	* src/gtkNode_gtk.c (Module): cosmetic
-
-	* src/gtkNode_cnode.c (Module): doc
-
-	* src/generate.erl (Module): rewrite
-
-2004-11-04  Mats Cronqvist  <qthmacr@mwux005>
-
-	* src/generate.erl (Module): modified to use .defs files from pygtk
-
-	* src/gtkNode_log.c (Module): removed
-
-	* src/gtknode.glade (Module): button signal handler fixed
-
-	* src/gtkNode_marshal.c (Module): final(?) refactoring + bugs galore
-
-	* src/gtkNode_internal.c (Module): final(?) refactoring
-
-	* src/gtkNode_glade.c (Module): final(?) refactoring + signals
-
-	* src/gtkNode_cnode.c (Module): final(?) refactoring
-
-	* src/gtkNode.c (Module): final(?) refactoring
-
-	* src/Makefile (Module): TAGS file
-
-	* inc/gtkNode.h (Module): final(?) refactoring
-
-2004-10-27  Mats Cronqvist  <qthmacr@mwux005>
-
-	* src/gtkNode_log.c (Module): Glib'd. it's not used anymore...
-
-	* src/gtkNode_internal.c (Module): prettified
-
-	* src/gtkNode_gtk.c (Module): stuff -> gtkNode_marshal
-
-	* src/gtkNode_glade.c (Module): GLib'd error handling
-
-	* src/gtkNode_cnode.c (Module): GLib'd error handling
-
-	* inc/gtkNode.h (Module): marshalling
-
-2004-10-26  Mats Cronqvist  <qthmacr@mwux005>
-
-	* src/gtkNode_cnode.c (Module): passing widgets back and forth,
-	by name or by reference, seemingly works
-
-	* src/gtkNode.c (Module): scoping error
-
-	* inc/gtkNode.h (Module): scoping error
-
-2004-10-18  Mats Cronqvist  <qthmacr@mwux005>
-
-	* src/gtkNode_glade.c (Module): signals work...
-
-	* src/gtkNode_cnode.c (Module): signals work...
-
-	* src/gtkNode.c (Module): drudgery
-
-	* inc/gtkNode.h (Module): drudgery
-
-2004-10-11  Mats Cronqvist  <qthmacr@mwux005>
-
-	* src/gtknode.glade (Module): drudgery
-
-	* src/gtkNode_log.c (Module): refactoring
-
-	* src/gtkNode_glade.c (Module): drudgery
-
-	* src/gtkNode_cnode.c (Module): drudgery
-
-	* src/gtkNode.c (Module): drudgery
-
-	* src/Makefile (Module): drudgery
-
-	* inc/gtkNode.h (Module): drudgery
-
-2004-10-01  Mats Cronqvist  <qthmacr@mwux005>
+commit 67f62e678aa6c3b0123a5a7449a90ace6e023ad0
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Wed Sep 20 11:13:55 2006 +0000
+
+    gn_erl is an alias for gn_sighandler
+    fixed up the examples
+    took some suggestions from lenglet
+
+ChangeLog
+c_src/gtknode.h
+c_src/gtknode_glade.c
+configure.ac
+priv/examples/README
+priv/examples/points/points.erl
+
+commit f755a1b6d1df80b3a8058fca7fe5ba307ea04bf8
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Tue Sep 19 15:12:51 2006 +0000
+
+      signals from the c-node now looks like {GUI,{signal,{Widget,Signal}}}
+      implemented GN_tree_view_get_selected (returns a list of path strings)
+      the generator now generates pretty useful documentation
+      implemented gtknode:f/2,3 for interactive use from the shell
+
+c_src/gtknode.h
+c_src/gtknode_glade.c
+c_src/gtknode_internal.c
+c_src/gtknode_marshal.c
+priv/generator/Makefile.am
+priv/generator/generator.erl
+src/gtknode.erl
+
+commit a4213ade0dd4f05679e790a4c4c019dcc73add29
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Wed Sep 6 12:41:10 2006 +0000
+
+      process-level and call-level profiling works.
+      aquire function works, but gui not yet implemented.
+
+priv/examples/sherk/Makefile.am
+priv/examples/sherk/sherk.erl
+priv/examples/sherk/sherk.glade
+priv/examples/sherk/sherk.glade.bak
+priv/examples/sherk/sherk_aquire.erl
+priv/examples/sherk/sherk_list.erl
+priv/examples/sherk/sherk_prof.erl
+priv/examples/sherk/sherk_scan.erl
+priv/examples/sherk/sherk_tab.erl
+priv/examples/sherk/sherk_target.erl
+
+commit f561f821c6a6f6965a5366b291afdc95dbd183a6
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Mon Sep 4 11:43:51 2006 +0000
+
+      svn:ignore stuff
+
+commit 452d2cdc27301a55f0fe7bc2ae38017c11f78e91
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Mon Sep 4 11:42:22 2006 +0000
+
+      updated the 'top' (formerly known as simple) example.
+
+ChangeLog
+priv/examples/top/top.erl
+
+commit 558d6b14fba1ac04d17f400178180d649a8707a9
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Tue Aug 29 15:25:06 2006 +0000
+
+      initial upload to google
+
+AUTHORS
+COPYING
+ChangeLog
+INSTALL
+Makefile.am
+NEWS
+c_src/Makefile.am
+c_src/gtknode.c
+c_src/gtknode.h
+c_src/gtknode_cnode.c
+c_src/gtknode_gen.c
+c_src/gtknode_glade.c
+c_src/gtknode_internal.c
+c_src/gtknode_marshal.c
+c_src/gtknode_structs.c
+compile
+configure.ac
+depcomp
+doc/Makefile.am
+doc/announce
+doc/short-desc
+install-sh
+missing
+priv/Makefile.am
+priv/examples/Makefile.am
+priv/examples/README
+priv/examples/points/Makefile.am
+priv/examples/points/points.erl
+priv/examples/points/points.glade
+priv/examples/points/points.gladep
+priv/examples/sherk/Makefile.am
+priv/examples/sherk/sherk.erl
+priv/examples/sherk/sherk.glade
+priv/examples/sherk/sherk.glade.bak
+priv/examples/sherk/sherk.gladep
+priv/examples/sherk/sherk.gladep.bak
+priv/examples/sherk/sherk_list.erl
+priv/examples/sherk/sherk_prof.erl
+priv/examples/sherk/sherk_scan.erl
+priv/examples/sherk/sherk_tab.erl
+priv/examples/sherk/sherk_tree.erl
+priv/examples/top/Makefile.am
+priv/examples/top/top.erl
+priv/examples/top/top.glade
+priv/examples/top/top.gladep
+priv/examples/top/top_top.erl
+priv/generator/Makefile.am
+priv/generator/bio.erl
+priv/generator/g_black.txt
+priv/generator/g_predefined.defs
+priv/generator/g_white.txt
+priv/generator/gdk_black.txt
+priv/generator/gdk_predefined.defs
+priv/generator/gdk_white.txt
+priv/generator/generator.erl
+priv/generator/gtk_black.txt
+priv/generator/gtk_predefined.defs
+priv/generator/gtk_white.txt
+priv/generator/h2def.py
+src/Makefile.am
+src/gtknode.erl
+
+commit 224f3f28ac591e45e7df5b100af445f7e223846d
+Author: mats cronqvist <mats.cronqvist@gmail.com>
+Date:   Tue Aug 29 13:40:13 2006 +0000
+
+      testing svn connectivity
+
+README
+
+commit ee8bad89cdc907264f923f2d22a453eff7ddd40e
+Author: (no author) <(no author)@9999ab98-4a1b-0410-ba6a-d90168ca9a37>
+Date:   Fri Aug 18 13:18:33 2006 +0000
+
+    Initial directory structure.

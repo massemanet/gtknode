@@ -1,4 +1,5 @@
-mats cronqvist (mats.cronqvist@ericsson.com)
-  basic design and most of the hacking
-Romain Lenglet (rlenglet@users.forge.objectweb.org)
-  the build system + various fixes
+ Mats Cronqvist <masse@cronqvi.st>
+ Anthony Ramine <nox@dev-extend.eu>
+ Jesper Louis Andersen <jesper.louis.andersen@gmail.com>
+ Oleg Smirnov <oleg.smirnov@gmail.com>
+ Peter Lemenkov <lemenkov@gmail.com>

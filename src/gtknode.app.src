@@ -2,7 +2,7 @@
 {application, gtknode,
  [
   {description, "GTK2 binding for erlang"},
-  {vsn, "0.0.0"},
+  {vsn, "1.0.0"},
   {registered, []},
   {applications, [
                   kernel,
