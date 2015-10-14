@@ -165,9 +165,9 @@ waiting_handshake(St = #st{gtk_port=Port}) ->
     {Port,PortData} ->                  %from the port
       waiting_handshake(handle_portdata(St, PortData));
     {'EXIT',Port,Reason} ->                 %port died, us too
-      die({port_died,Reason});
+      ?LOG({port_died,Reason});
     quit ->
-      die(quitting)
+      die()
   after
     ?BORED -> waiting_handshake(bored(waiting_handshake,St))
   end.
@@ -187,12 +187,12 @@ idle(St = #st{gtk_pid=GtkPid, gtk_port=Port, handler_pid=HandPid}) ->
       idle(handle_portdata(St, PortData));
     {'EXIT',HandPid,Reason} ->
       %%handler died
-      die({handler_died,Reason});
+      ?LOG({handler_died,Reason});
     {'EXIT',Port,Reason} ->
       %%port died, us too
-      die({port_died,Reason});
+      ?LOG({port_died,Reason});
     quit ->
-      die(quitting)
+      die()
   end.
 
 waiting(St = #st{gtk_pid=GtkPid, gtk_port=Port},CmdArgs,OldReps) ->
@@ -208,9 +208,9 @@ waiting(St = #st{gtk_pid=GtkPid, gtk_port=Port},CmdArgs,OldReps) ->
     {Port,{data,PortData}} ->           %from the port
       waiting(handle_portdata(St, PortData),CmdArgs,OldReps);
     {'EXIT',Port,Reason} ->                 %port died, us too
-      die({port_died,{Reason,CmdArgs}});
+      ?LOG({port_died,{Reason,CmdArgs}});
     quit ->
-      die(quitting)
+      die()
   after
     ?BORED -> waiting(bored(waiting,St),CmdArgs,OldReps)
   end.
@@ -227,11 +227,9 @@ bored(State,St) ->
   ?LOG([{bored,State}, {state,St}, {msgs,process_info(self(),messages)}]),
   St.
 
--spec die(term()) -> no_return().
-die(quitting) -> ok;
-die(Reason) ->
-  process_flag(trap_exit,false),
-  error({dying,Reason}).
+-spec die() -> no_return().
+die() ->
+  exit(dying).
 
 log(ProcInfo,Term) when not is_list(Term) -> log(ProcInfo,[Term]);
 log(ProcInfo,List) ->
