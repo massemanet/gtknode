@@ -5,6 +5,7 @@
 *.out
 *.o
 erl_crash.dump
+/.eunit/
 /.rebar/
 /c_src/
 /ebin/
