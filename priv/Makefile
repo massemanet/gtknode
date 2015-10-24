@@ -18,11 +18,11 @@ generate:
 
 generator/build/gtknode: $(OBJS)
 	$(CC) \
-	$(shell pkg-config --libs libglade-2.0) \
-	$(shell pkg-config --libs gmodule-2.0) \
 	$(OBJS) \
 	-L$(ERL_ROOT)/usr/lib -lei \
-	-o $@
+	-o $@ \
+	$(shell pkg-config --libs libglade-2.0) \
+	$(shell pkg-config --libs gmodule-2.0)
 
 c_src/%.o: c_src/%.c
 	$(CC) \
