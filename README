@@ -32,7 +32,7 @@ the process implementing the widget in the c-node.
 
 * it has an eminent GUI builder, Glade (glade.gnome.org)
 * it has facilities for instantiating the GUI from the Glade (XML) files
-* it has good documentation 
+* it has good documentation
 * it supports run-time type checking
 * its object orientation maps well to Erlang (Obj.meth(Arg) -> Obj!{meth,[Arg]})
 * the Python binding provides useful tools for code generation
@@ -42,7 +42,7 @@ the process implementing the widget in the c-node.
 functions for object storage and marshalling, and a whole bunch of
 generated wrapper functions.
   The main loop is a pretty generic c-node that simple-mindedly
-receives lists of 2-tuples; 
+receives lists of 2-tuples;
 
 {atom('Func'), list(boolean()|integer()|float()|atom()|string())}
 
@@ -60,7 +60,7 @@ in the Glade file.
 
   the c-node is started thus;
 gtknode node host regname cookie cnode-name otp-version
- 
+
   when started, gtknode will connect to it's application by sending a
 handshake message to {node@host, regname}.
   the messsage looks like this;
@@ -109,43 +109,6 @@ examples/simple/simple.glade
   GETTING IT
 
 http://github.com/massemanet/gtknode/
-
-  BUILDING
-
-  i can't see why the should be any real problems to get this to work
-on Windows (if it can be said that anything works on Windows); alas, i
-have no real wish to try it myself...
-  look here for more info;
-www.gimp.org/~tml/gimp/win32
-www.mingw.org
-
-  i myself have it run on solaris 8, linux (debian lenny, squeeze and wheezy,
-and ubuntu 8,9,10,11 and 12), and mac osx (10.7 and 10.9).
-
-aclocal ; autoconf ; automake ; ./configure ; make
-
-  should work, if;
-
-* OTP_ROOT is sane
-* there is a sane GTK environment
-
-  on a deb-based system, installing libglade2-dev should be enough.
-
-  on osx, you should (imho) use homebrew. this is probably enough;
-brew install glade fontconfig freetype libpng
-
-  while building, you'll have to override the decrepit osx versions of
-the autotools, and give configure some help to find the pkg-config
-files. something along these lines;
-
-export PATH=`brew --prefix autoconf`/bin:`brew --prefix automake`/bin:$PATH
-export PKG_CONFIG_PATH=/usr/X11/lib/pkgconfig:/usr/local/lib/pkgconfig
-
-  otherwise, if this;
-
-pkg-config --cflags libglade-2.0
-
- works, i.e. returns a bunch of c-flags, you should be OK.
 
   STATUS
 
