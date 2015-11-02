@@ -1,9 +1,26 @@
-commit 8394d8886fb142ebe1503d616116146ca46f671e
+commit d55f0420bb36abfcd208b9d34e2f8b78ff582767
+Author: mats cronqvist <masse@klarna.com>
+Date:   Mon Nov 2 14:10:30 2015 +0000
+
+    v1.0.2
+
+src/gtknode.app.src
+
+commit 46462c1f2d55157f91cd82a7d6ef976994d402c4
+Author: mats cronqvist <masse@klarna.com>
+Date:   Mon Nov 2 14:10:07 2015 +0000
+
+    sh is old, use bash instead
+
+bin/release.sh
+
+commit 4602344ab6a8bdfab5fba0a4650ee267ba333b13
 Author: mats cronqvist <masse@klarna.com>
 Date:   Mon Nov 2 14:09:07 2015 +0000
 
     v1.0.1
 
+ChangeLog
 src/gtknode.app.src
 
 commit 36f76715d6d7d781ff63c39f199b92b95127e91f
