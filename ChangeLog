@@ -1,9 +1,44 @@
-commit e266d470bba81f088050027655814f726a334e33
+commit 8394d8886fb142ebe1503d616116146ca46f671e
+Author: mats cronqvist <masse@klarna.com>
+Date:   Mon Nov 2 14:09:07 2015 +0000
+
+    v1.0.1
+
+src/gtknode.app.src
+
+commit 36f76715d6d7d781ff63c39f199b92b95127e91f
+Author: mats cronqvist <masse@klarna.com>
+Date:   Mon Nov 2 14:07:20 2015 +0000
+
+    docs
+
+INSTALL
+README
+
+commit e31a493bb61b7bec9f3b25f7179f5962a5607b8d
+Author: mats cronqvist <masse@klarna.com>
+Date:   Mon Nov 2 11:51:31 2015 +0000
+
+    make example tweak
+
+priv/examples/hello/Makefile
+
+commit 40fb2180f30869ab0670a900367465c2e9e11b6c
+Author: mats cronqvist <masse@klarna.com>
+Date:   Sat Oct 24 19:18:43 2015 +0000
+
+    fix linker flags
+
+priv/Makefile
+
+commit 661cd60d7e01d77cb02b1468caef3f16bafdd017
 Author: mats cronqvist <masse@klarna.com>
 Date:   Wed Oct 14 13:27:10 2015 +0200
 
     v1.0.0
 
+AUTHORS
+ChangeLog
 src/gtknode.app.src
 
 commit 5944ab0d3a58421d87217e256539cfcd8f02140e
