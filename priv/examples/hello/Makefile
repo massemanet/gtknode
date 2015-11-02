@@ -9,7 +9,7 @@ all: erl c
 c: $(EXES)
 
 %.out: %.o
-	cc $(shell pkg-config --libs gtk+-2.0) -o $@ $<
+	cc $< $(shell pkg-config --libs gtk+-2.0) -o $@
 
 %.o: %.c
 	cc $(shell pkg-config --cflags gtk+-2.0) -o $@ -c $<
