@@ -48,7 +48,7 @@ xref: compile
 
 dialyze: compile ~/.dialyzer_plt
 	$(shell [ -d .eunit ] && rm -rf .eunit)
-	dialyzer ebin -nn --no_spec --plt ~/.dialyzer_plt
+	dialyzer ebin -nn --plt ~/.dialyzer_plt
 
 ~/.dialyzer_plt:
 	-dialyzer --output_plt ${@} --build_plt \
