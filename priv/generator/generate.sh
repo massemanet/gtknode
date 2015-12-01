@@ -6,7 +6,7 @@ function incdir() {
 }
 
 function canonic() {
-    readlink -e $1
+    [ $(which greadlink) ] && greadlink -e $1 || readlink -e $1
 }
 
 function gennifer() {

@@ -27,4 +27,4 @@ pkg-config --cflags libglade-2.0
 
   On osx, you should use homebrew. this is probably enough;
 
-brew install libglade
+brew install libglade coreutils

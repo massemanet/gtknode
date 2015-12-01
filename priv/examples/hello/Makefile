@@ -1,6 +1,6 @@
 .PHONY: all erl c
 
-EBIN = $(shell readlink -e ../../../ebin)
+EBIN = ../../../ebin
 BEAMS = $(patsubst %.erl, $(EBIN)/%.beam, $(shell echo *.erl))
 EXES = $(patsubst %.c, %.out, $(shell echo *.c))
 

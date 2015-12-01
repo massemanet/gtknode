@@ -1,6 +1,6 @@
 .PHONY: erl
 
-EBIN = $(shell readlink -e ../../../ebin)
+EBIN = ../../../ebin
 BEAMS = $(patsubst %.erl, $(EBIN)/%.beam, $(shell echo *.erl))
 
 erl: $(BEAMS)
