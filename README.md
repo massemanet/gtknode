@@ -1,6 +1,8 @@
-  Yet Another GUI framework for Erlang - gtknode
+# gtknode
 
-  DESIGN GOALS
+*Yet Another GUI framework for Erlang*
+
+## DESIGN GOALS
 
 * GUI separated from application by message passing
 * distributed (application and GUI can run on different machines)
@@ -8,9 +10,9 @@
 * small volume of (hand-written) code
 * pre-documented
 
-  ARCHITECTURE
+##  ARCHITECTURE
 
-  a c-node (a daemon that implements the Erlang distribution protocol)
+a c-node (a daemon that implements the Erlang distribution protocol)
 that instantiates the GUI from a configuration file. the c-node sends
 messages to the Erlang node when the user interacts with the GUI; the
 Erlang application changes the state of the GUI by sending messages to
@@ -21,14 +23,14 @@ CnodePid ! {aWidget,dosomething,Args}       % erlang->cNode
 ApplicationPid ! {reply, Val}               % cNode->Erlang
 ApplicationPid ! {signal,aWidget,eventType} % cNode->erlang
 
-  in this example aWidget is the name given to a widget in the
+in this example aWidget is the name given to a widget in the
 configration file. it can also be thought of as the registered name of
 the process implementing the widget in the c-node.
   the c-node is responsible for garbage-collecting all temporary data.
 
-  IMPLEMENTATION
+#  IMPLEMENTATION
 
-  i chose GTK2 (www.gtk.org) as the framework. there were several reasons;
+i chose GTK2 (www.gtk.org) as the framework. there were several reasons;
 
 * it has an eminent GUI builder, Glade (glade.gnome.org)
 * it has facilities for instantiating the GUI from the Glade (XML) files
@@ -38,79 +40,103 @@ the process implementing the widget in the c-node.
 * the Python binding provides useful tools for code generation
 * seems to be the Future (tm) in the *nix world, and runs on Windows too.
 
-  there's three parts to the gtknode. a main loop, some support
+there's three parts to the gtknode. a main loop, some support
 functions for object storage and marshalling, and a whole bunch of
 generated wrapper functions.
-  The main loop is a pretty generic c-node that simple-mindedly
+
+The main loop is a pretty generic c-node that simple-mindedly
 receives lists of 2-tuples;
 
+```erlang
 {atom('Func'), list(boolean()|integer()|float()|atom()|string())}
+```
 
-  it checks that there exists a function Func and calls it, passing a
+it checks that there exists a function Func and calls it, passing a
 pointer to the argument list. the Func's are wrapper functions
 generated from the GTK header files, and unmarshalls and type checks
 the arguments before the actual GTK functions are called.
-  the return value of the GTK function is sent back to the Erlang node.
 
-  a different kind of message is sent if there is an interesting event
+the return value of the GTK function is sent back to the Erlang node.
+
+a different kind of message is sent if there is an interesting event
 in the GUI (e.g. a button is pressed), where "interesting" means specified
 in the Glade file.
 
-  REFERENCE
+##  REFERENCE
 
-  the c-node is started thus;
+the c-node is started thus;
+
+```
 gtknode node host regname cookie cnode-name otp-version
+```
 
-  when started, gtknode will connect to it's application by sending a
-handshake message to {node@host, regname}.
-  the messsage looks like this;
+when started, gtknode will connect to it's application by sending a
+handshake message to ``{node@host, regname}``.
+
+the messsage looks like this;
+
+```erlang
 {{GtkPid,handshake}, []}
+```
 
-  the Erlang application sends messages to the gtknode using
+the Erlang application sends messages to the gtknode using
 GtkPid. messages look like this;
 
+```erlang
 list({'Gtk_function', [Args]})
+```
 
-  E.g., if we have a GtkButton widget, named b1, and we want to use
+E.g., if we have a GtkButton widget, named b1, and we want to use
 these functions;
 
+```c
 const gchar* gtk_button_get_label (GtkButton *button);
 void         gtk_button_set_label (GtkButton *button, const gchar *label);
+```
 
-  we could send this;
+we could send this;
 
+```erlang
 GtkPid ! [{'Gtk_button_set_label',[b1,"foo"]},{'Gtk_button_get_label',[b1]}].
+```
 
-  and we would receive this;
+and we would receive this;
 
+``erlang
 {{GtkPid,reply}, [{ok,void},{ok,"foo"}]}
+```
 
-  signals are sent from gtknode if the signal handler for a specified
+signals are sent from gtknode if the signal handler for a specified
 signal-widget combination is set to gn_sighandler. the signals look
 like this;
 
+```erlang
 {{GtkPid, signal}, {atom(WidgetName),atom(SignalName)}}
+```
 
-  E.g., if we delete the GtkWindow named window1 we'll get this signal
+E.g., if we delete the GtkWindow named window1 we'll get this signal
 
+```erlang
 {{GtkPid, signal},{window1,'GDK_DELETE'}}
+```
 
-  given that we've requested it, of course.
+given that we've requested it, of course.
 
-  EXAMPLES
+##  EXAMPLES
 
-  the file src/gtknode.erl implements a controller/middleman for the
+the file src/gtknode.erl implements a controller/middleman for the
 gtknode, it's quite instructive. it is recommended to use this instead of
- working directly against the c-node.
-  the file examples/simple/simple.erl implements the Erlang side of a
+working directly against the c-node.
+
+the file examples/simple/simple.erl implements the Erlang side of a
 GUI for a simple 'top' application. the GUI is specified in
-examples/simple/simple.glade
+``examples/simple/simple.glade``.
 
-  GETTING IT
+##  GETTING IT
 
-http://github.com/massemanet/gtknode/
+[http://github.com/massemanet/gtknode/](http://github.com/massemanet/gtknode/)
 
-  STATUS
+##  STATUS
 
-  stable since 2008
+stable since 2008
 
