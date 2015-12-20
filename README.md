@@ -28,41 +28,9 @@ configration file. it can also be thought of as the registered name of
 the process implementing the widget in the c-node.
   the c-node is responsible for garbage-collecting all temporary data.
 
-#  IMPLEMENTATION
+##  IMPLEMENTATION
 
-i chose GTK2 (www.gtk.org) as the framework. there were several reasons;
-
-* it has an eminent GUI builder, Glade (glade.gnome.org)
-* it has facilities for instantiating the GUI from the Glade (XML) files
-* it has good documentation
-* it supports run-time type checking
-* its object orientation maps well to Erlang (Obj.meth(Arg) -> Obj!{meth,[Arg]})
-* the Python binding provides useful tools for code generation
-* seems to be the Future (tm) in the *nix world, and runs on Windows too.
-
-there's three parts to the gtknode. a main loop, some support
-functions for object storage and marshalling, and a whole bunch of
-generated wrapper functions.
-
-The main loop is a pretty generic c-node that simple-mindedly
-receives lists of 2-tuples;
-
-```erlang
-{atom('Func'), list(boolean()|integer()|float()|atom()|string())}
-```
-
-it checks that there exists a function Func and calls it, passing a
-pointer to the argument list. the Func's are wrapper functions
-generated from the GTK header files, and unmarshalls and type checks
-the arguments before the actual GTK functions are called.
-
-the return value of the GTK function is sent back to the Erlang node.
-
-a different kind of message is sent if there is an interesting event
-in the GUI (e.g. a button is pressed), where "interesting" means specified
-in the Glade file.
-
-##  REFERENCE
+###  REFERENCE
 
 the c-node is started thus;
 
@@ -80,13 +48,13 @@ the messsage looks like this;
 ```
 
 the Erlang application sends messages to the gtknode using
-GtkPid. messages look like this;
+``GtkPid``. messages look like this;
 
 ```erlang
 list({'Gtk_function', [Args]})
 ```
 
-E.g., if we have a GtkButton widget, named b1, and we want to use
+E.g., if we have a ``GtkButton`` widget, named b1, and we want to use
 these functions;
 
 ```c
@@ -102,12 +70,12 @@ GtkPid ! [{'Gtk_button_set_label',[b1,"foo"]},{'Gtk_button_get_label',[b1]}].
 
 and we would receive this;
 
-``erlang
+```erlang
 {{GtkPid,reply}, [{ok,void},{ok,"foo"}]}
 ```
 
 signals are sent from gtknode if the signal handler for a specified
-signal-widget combination is set to gn_sighandler. the signals look
+signal-widget combination is set to ``gn_sighandler``. the signals look
 like this;
 
 ```erlang
@@ -124,7 +92,7 @@ given that we've requested it, of course.
 
 ##  EXAMPLES
 
-the file src/gtknode.erl implements a controller/middleman for the
+the file ``src/gtknode.erl`` implements a controller/middleman for the
 gtknode, it's quite instructive. it is recommended to use this instead of
 working directly against the c-node.
 
