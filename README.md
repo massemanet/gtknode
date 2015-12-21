@@ -19,14 +19,17 @@ Erlang application changes the state of the GUI by sending messages to
 widgets in the c-node. the widgets should look like Erlang processes
 with registered names. the protocol should look something like this.
 
+```erlang
 CnodePid ! {aWidget,dosomething,Args}       % erlang->cNode
 ApplicationPid ! {reply, Val}               % cNode->Erlang
 ApplicationPid ! {signal,aWidget,eventType} % cNode->erlang
+```
 
 in this example aWidget is the name given to a widget in the
 configration file. it can also be thought of as the registered name of
 the process implementing the widget in the c-node.
-  the c-node is responsible for garbage-collecting all temporary data.
+
+the c-node is responsible for garbage-collecting all temporary data.
 
 ##  IMPLEMENTATION
 
