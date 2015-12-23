@@ -10,3 +10,4 @@ erl_crash.dump
 /c_src/
 /ebin/
 /priv/generator/build/
+*.sw[op]
