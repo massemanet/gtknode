@@ -1,9 +1,92 @@
-commit d55f0420bb36abfcd208b9d34e2f8b78ff582767
+commit ba102c4e5be06e3ea428fa475d05d7cce11d96fc
+Author: mats cronqvist <masse@cronqvi.st>
+Date:   Thu Dec 24 23:18:55 2015 +0100
+
+    v1.0.4
+
+src/gtknode.app.src
+
+commit 7183d55fe968a8866ee64c4f8768c0237b192a7a
+Author: mats cronqvist <masse@cronqvi.st>
+Date:   Thu Dec 24 23:18:00 2015 +0100
+
+    spelling
+
+README.md
+
+commit 7c4fcca0a021c7ae7f8632ded1c8ed3c6371ae1c
+Author: Duncan McGreggor <oubiwann@gmail.com>
+Date:   Sun Dec 20 19:46:04 2015 -0600
+
+    Updated ignores.
+
+.gitignore
+
+commit bd19a341a2051bec55bfaa2f70799b34667a9de0
+Author: Duncan McGreggor <oubiwann@gmail.com>
+Date:   Sun Dec 20 18:06:54 2015 -0600
+
+    Consistent use of lower-case.
+    Also:
+     * and formatting for var name
+     * use standard colons
+
+README.md
+
+commit 657feef0cb9c114f40ce6625a4442d8fbe8600dc
+Author: Duncan McGreggor <oubiwann@gmail.com>
+Date:   Sun Dec 20 18:02:40 2015 -0600
+
+    Added formating for another block of Erlang code.
+
+README.md
+
+commit 9b2c88039d4c33a37d2a9649a9c1d3502fdbb623
+Author: Duncan McGreggor <oubiwann@gmail.com>
+Date:   Sun Dec 20 17:54:44 2015 -0600
+
+    Formatting tweaks
+
+README.md
+
+commit 2982aacb33de885795814b53ffa955cf0d1ab668
+Author: Duncan McGreggor <oubiwann@gmail.com>
+Date:   Sun Dec 20 17:52:18 2015 -0600
+
+    Converted to Markdown
+
+README
+README.md
+
+commit dcfc51c94b1253e3fe9a1f5dc554fc5a4e73da9c
+Author: mats cronqvist <masse@cronqvi.st>
+Date:   Tue Dec 1 15:27:41 2015 +0100
+
+    fix readlink on mac
+
+INSTALL
+priv/examples/hello/Makefile
+priv/examples/hello_world/Makefile
+priv/examples/points/Makefile
+priv/examples/top/Makefile
+priv/examples/treeview/Makefile
+priv/generator/generate.sh
+
+commit 4d8a3edae04874a3dd5ab75d9b39353b6cb4b444
+Author: mats cronqvist <masse@cronqvi.st>
+Date:   Mon Nov 9 16:26:30 2015 +0100
+
+    remove dialyzer no_spec flag
+
+Makefile
+
+commit 33706a3f7e73ada1796470137843bf0a02ec5877
 Author: mats cronqvist <masse@klarna.com>
 Date:   Mon Nov 2 14:10:30 2015 +0000
 
     v1.0.2
 
+ChangeLog
 src/gtknode.app.src
 
 commit 46462c1f2d55157f91cd82a7d6ef976994d402c4
