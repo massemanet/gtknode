@@ -12,12 +12,12 @@
 
 ##  ARCHITECTURE
 
-a c-node (a daemon that implements the Erlang distribution protocol)
-that instantiates the GUI from a configuration file. the c-node sends
+A c-node (a daemon that implements the Erlang distribution protocol)
+that instantiates the GUI from a configuration file. The c-node sends
 messages to the Erlang node when the user interacts with the GUI; the
 Erlang application changes the state of the GUI by sending messages to
-widgets in the c-node. the widgets should look like Erlang processes
-with registered names. the protocol should look something like this:
+widgets in the c-node. The widgets should look like Erlang processes
+with registered names. The protocol should look something like this:
 
 ```erlang
 CnodePid ! {aWidget,dosomething,Args}       % erlang->cNode
@@ -25,32 +25,32 @@ ApplicationPid ! {reply, Val}               % cNode->erlang
 ApplicationPid ! {signal,aWidget,eventType} % cNode->erlang
 ```
 
-in this example ``aWidget`` is the name given to a widget in the
-configration file. it can also be thought of as the registered name of
+In this example ``aWidget`` is the name given to a widget in the
+configration file. It can also be thought of as the registered name of
 the process implementing the widget in the c-node.
 
-the c-node is responsible for garbage-collecting all temporary data.
+The c-node is responsible for garbage-collecting all temporary data.
 
 ##  IMPLEMENTATION
 
 ###  REFERENCE
 
-the c-node is started thus;
+The c-node is started thus;
 
 ```
 gtknode node host regname cookie cnode-name otp-version
 ```
 
-when started, gtknode will connect to it's application by sending a
+When started, gtknode will connect to it's application by sending a
 handshake message to ``{node@host, regname}``.
 
-the messsage looks like this;
+The messsage looks like this;
 
 ```erlang
 {{GtkPid,handshake}, []}
 ```
 
-the Erlang application sends messages to the gtknode using
+The Erlang application sends messages to the gtknode using
 ``GtkPid``. messages look like this:
 
 ```erlang
@@ -77,8 +77,8 @@ and we would receive this:
 {{GtkPid,reply}, [{ok,void},{ok,"foo"}]}
 ```
 
-signals are sent from gtknode if the signal handler for a specified
-signal-widget combination is set to ``gn_sighandler``. the signals look
+Signals are sent from gtknode if the signal handler for a specified
+signal-widget combination is set to ``gn_sighandler``. The signals look
 like this:
 
 ```erlang
@@ -91,16 +91,16 @@ E.g., if we delete the ``GtkWindow`` named ``window1`` we'll get this signal:
 {{GtkPid, signal},{window1,'GDK_DELETE'}}
 ```
 
-given that we've requested it, of course.
+Given that we've requested it, of course.
 
 ##  EXAMPLES
 
-the file ``src/gtknode.erl`` implements a controller/middleman for the
-gtknode, it's quite instructive. it is recommended to use this instead of
+The file ``src/gtknode.erl`` implements a controller/middleman for the
+gtknode, it's quite instructive. It is recommended to use this instead of
 working directly against the c-node.
 
-the file examples/simple/simple.erl implements the Erlang side of a
-GUI for a simple "top" application. the GUI is specified in
+The file examples/simple/simple.erl implements the Erlang side of a
+GUI for a simple "top" application. The GUI is specified in
 ``examples/simple/simple.glade``.
 
 ##  GETTING IT
@@ -109,5 +109,4 @@ GUI for a simple "top" application. the GUI is specified in
 
 ##  STATUS
 
-stable since 2008
-
+Stable since 2008
