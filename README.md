@@ -99,9 +99,7 @@ The file ``src/gtknode.erl`` implements a controller/middleman for the
 gtknode, it's quite instructive. It is recommended to use this instead of
 working directly against the c-node.
 
-The file examples/simple/simple.erl implements the Erlang side of a
-GUI for a simple "top" application. The GUI is specified in
-``examples/simple/simple.glade``.
+The priv/examples directory contains a few examples.
 
 ##  GETTING IT
 

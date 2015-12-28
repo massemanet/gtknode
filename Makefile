@@ -17,6 +17,9 @@ compile:
 cnode:
 	make -C priv
 
+generate:
+	make -C priv/generator
+
 clean:
 	@find . -name "*~" -exec rm {} \;
 	@$(REBAR) clean
