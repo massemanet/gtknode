@@ -20,9 +20,11 @@ gboolean gn_glade_init(char *filename);
 
 /*   marshalling functions (gtknode_marshal.c) */
 void gn_wrap_ans(char* tag, ei_x_buff* xbuf);
+void gn_wrap_reply(char* tag, ei_x_buff* xbuf);
 void gn_enc_1_error(ei_x_buff *xbuf, char *err);
 void gn_enc_2_error(ei_x_buff *xbuf, char *err);
 
+void gn_put_atom(ei_x_buff *xbuf, char *p);
 void gn_put_tuple(ei_x_buff *xbuf, int N);
 void gn_put_void(ei_x_buff *xbuf);
 void gn_put_pid(ei_x_buff *xbuf, erlang_pid *p);

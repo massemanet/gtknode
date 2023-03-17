@@ -1,6 +1,9 @@
 #include "gtknode.h"
+#include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+
+static gboolean gn_get_arg_gtype(ei_x_buff *XBUF, char *B, int *I, GType *gt);
 
 static void hash_init() {
   extern GHashTable* ghash;
@@ -401,7 +404,7 @@ gboolean gn_get_arg_list(ei_x_buff *XBUF, char *B, int *I,
   return TRUE;
 }
 
-gboolean gn_get_arg_gtype(ei_x_buff *XBUF, char *B, int *I, GType *gt){
+static gboolean gn_get_arg_gtype(ei_x_buff *XBUF, char *B, int *I, GType *gt){
   gchar type_str[MAXATOMLEN+1];
 
   if ( ! gn_get_arg_gchar_fix(XBUF, B, I, type_str) ) return FALSE;
